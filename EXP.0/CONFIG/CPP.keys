@@ -1,0 +1,5 @@
+# TEMPLATE List of CPP keys required for NEMO compilation
+
+key_oasis3
+key_xios
+key_qco
