@@ -1,14 +1,6 @@
-# Generic Experiment Name
+# MLE-Fluxes-CNN
 
-**Fill EXP directories as follows:**
-
-	- CONFIG : material for NEMO compilation
-	- INFERENCES : python and eophis material
-	- RUN : material for production
-	- POSTPROCESS : material for post-processing and plotting
-	- RES : some pertinent results
-
-**Replace `highligthed content` below to fill the README template**
+...WORK IN PROGRESS...
 
 ## Context and Motivation
 
@@ -16,31 +8,26 @@
 
 ## Experiments Requirements
 
-**This part must list libraries versions and codes patches used to run the experiments and facilitates reproducibility.
-If one of your experiments needs different software environments, please create new repositories from NEST.**
 
 ### Compilation
 
-- NEMO version : `[<nemo_commit>](release_number)`
+- Code version : [https://forge.nemo-ocean.eu/nemo/nemo/-/releases/4.2.1](NEMO_v4.2.1) patched with [https://github.com/alexis-barge/morays/tree/main](Morays) and local `CONFIG/src` sources.
 
-- `Code Compilation manager if used : [<commit_link>](Version)`
-
-- `Customized sources : YES/NO`
+- Compilation Manager : [https://github.com/alexis-barge/DCM/releases/tag/v4.2.1](pyOASIS-extended DCM_v4.2.1)
 
 
 ### Python
 
-- Eophis version : `[<eophis_commit>](release_number)`
+- Eophis version : [https://github.com/alexis-barge/eophis/tree/v0.9.0-beta](eophis_v0.9.0-beta)
 
 
 ### Run
 
-- `NEMO Production Manager if used : [<commit_link>](manager_version)`
+- Production Manager : [https://github.com/alexis-barge/DCM/releases/tag/v4.2.1](pyOASIS-extended pyDCM_v4.2.1)
 
 
 ### Post-Process
 
-- `Post-Process libraries if used : [<commit_link>](release_number)`
+- Post-Process libraries : [DMONTOOLS](https://github.com/alexis-barge/DMONTOOLS) (requires [CDFTOOLS](https://github.com/meom-group/CDFTOOLS))
   
-- `Plotting libraries if used : [<commit_link>](release_number)`
-
+- Plotting : custom scripts in `POSTPROCESS`, use `plots.yml`
