@@ -23,7 +23,7 @@
 !------------------------------------------------------------------------------
    jpl              =   5             !  number of ice  categories
    nlay_i           =   2             !  number of ice  layers
-   nlay_s           =   2             !  number of snow layers
+   nlay_s           =   1             !  number of snow layers
    ln_virtual_itd   =   .false.       !  virtual ITD mono-category parameterization (jpl=1 only)
                                       !     i.e. enhanced thermal conductivity & virtual thin ice melting
    ln_icedyn        = .true.          !  ice dynamics (T) or not (F)
@@ -32,8 +32,8 @@
    rn_amax_s        =   0.997         !  maximum tolerated ice concentration SH
    cn_icerst_in     = "restart_ice"   !  suffix of ice restart name (input)
    cn_icerst_out    = "restart_ice"   !  suffix of ice restart name (output)
-   cn_icerst_indir  = "."             !  directory to read   input ice restarts
-   cn_icerst_outdir = "."             !  directory to write output ice restarts
+   cn_icerst_indir  = "<CN_DIRRST>"   !  directory to read   input ice restarts
+   cn_icerst_outdir = "<CN_DIRRST>"   !  directory to write output ice restarts
 /
 !------------------------------------------------------------------------------
 &namitd         !   Ice discretization
@@ -109,7 +109,7 @@
       ln_aEVP       = .true.          !     adaptive rheology (Kimmritz et al. 2016 & 2017)
       rn_creepl     =   2.0e-9        !     creep limit [1/s]
       rn_ecc        =   2.0           !     eccentricity of the elliptical yield curve          
-      nn_nevp       = 100             !     number of EVP subcycles                             
+      nn_nevp       = 120             !     number of EVP subcycles                             
       rn_relast     =   0.333         !     ratio of elastic timescale to ice time step: Telast = dt_ice * rn_relast 
                                       !        advised value: 1/3 (nn_nevp=100) or 1/9 (nn_nevp=300)
       nn_rhg_chkcvg =   0             !     check convergence of rheology
@@ -132,7 +132,7 @@
 !------------------------------------------------------------------------------
 &namsbc         !   Ice surface boundary conditions
 !------------------------------------------------------------------------------
-   rn_cio           =   5.0e-03       !  ice-ocean drag coefficient (-)
+   rn_cio           =   1.0e-03       !  ice-ocean drag coefficient (-)
    nn_snwfra        =   2             !  calculate the fraction of ice covered by snow (for zdf and albedo)
                                       !     = 0  fraction = 1 (if snow) or 0 (if no snow)
                                       !     = 1  fraction = 1-exp(-0.2*rhos*hsnw) [MetO formulation]
@@ -146,7 +146,7 @@
                                       !     = 2  Redistribute a single flux over categories
    ln_cndflx        = .false.         !  Use conduction flux as surface boundary conditions (i.e. for Jules coupling)
       ln_cndemulate = .false.         !     emulate conduction flux (if not provided in the inputs)
-   nn_qtrice        =   0             !  Solar flux transmitted thru the surface scattering layer:
+   nn_qtrice        =   1             !  Solar flux transmitted thru the surface scattering layer:
                                       !     = 0  Grenfell and Maykut 1977 (depends on cloudiness and is 0 when there is snow) 
                                       !     = 1  Lebrun 2019 (equals 0.3 anytime with different melting/dry snw conductivities)
 /
@@ -282,8 +282,8 @@
 !------------------------------------------------------------------------------
    ln_icediachk     = .false.         !  check online heat, mass & salt budgets
       !                               !   rate of ice spuriously gained/lost at each time step => rn_icechk=1 <=> 1.e-6 m/hour
-      rn_icechk_cel =  1.             !     check at each gridcell          (1.e-06m/h)=> stops the code if violated (and writes a file)
-      rn_icechk_glo =  1.e-04         !     check over the entire ice cover (1.e-10m/h)=> only prints warnings
+      rn_icechk_cel =  100.           !     check at each gridcell          (1.e-06m/h)=> stops the code if violated (and writes a file)
+      rn_icechk_glo =  1.             !     check over the entire ice cover (1.e-10m/h)=> only prints warnings
    ln_icediahsb     = .false.         !  output the heat, mass & salt budgets (T) or not (F)
    ln_icectl        = .false.         !  ice points output for debug (T or F)
       iiceprt       =  10             !     i-index for debug

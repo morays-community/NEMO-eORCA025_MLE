@@ -44,26 +44,31 @@ infos[ 'vozous' ] = [ 'S.u (degC.m/s)' , cmocean.cm.delta , colors.Normalize(vmi
 infos[ 'votemper' ] = [ 'Temperature (degC)' , cmocean.cm.thermal , colors.Normalize(vmin=-2, vmax=35), lambda x: x ]
 infos[ 'vosaline' ] = [ 'Salinity (psu)' , cmocean.cm.haline , colors.Normalize(vmin=28, vmax=38), lambda x: x ]
 infos[ 'voextrho' ] = [ '-\u0394\u03c1 (kg/m³)' , cmocean.cm.ice_r , colors.LogNorm(vmin=0.000005, vmax=0.05), lambda x: x ]
+infos[ 'somle_Lf' ] = [ 'ML Rossby Radius (m)' , cmocean.cm.dense , colors.LogNorm(vmin=10.0, vmax=15000.0), lambda x: x ]
+infos[ 'soextwbi' ] = [ 'INF subgrid Vert. Buoyancy Flux U (m2/s)' , cmocean.cm.balance , colors.Normalize(vmin=-15., vmax=20.), lambda x: x ]
+infos[ 'soextwbj' ] = [ 'INF subgrid Vert. Buoyancy Flux V (m2/s)' , cmocean.cm.balance , colors.Normalize(vmin=-20., vmax=20.), lambda x: x ]
+infos[ 'sointwbi' ] = [ 'NEMO subgrid Vert. Buoyancy Flux U (m2/s)' , cmocean.cm.balance , colors.Normalize(vmin=-15., vmax=20.), lambda x: x ]
+infos[ 'sointwbj' ] = [ 'NEMO subgrid Vert. Buoyancy Flux V (m2/s)' , cmocean.cm.balance , colors.Normalize(vmin=-20., vmax=20.), lambda x: x ]
 # ============================================================
 #                       2D Fields to plot
 # ============================================================
-to_plot[ 'gridTsurf' ] = ['soextrho','sosstsst','sosaline','soextrho','sossheig'] # sst, sss, drho
-to_plot[ 'gridUsurf' ] = ['vozocrtx']                       # u-current
-to_plot[ 'gridVsurf' ] = ['vomecrty']                       # v-current
+to_plot[ 'gridTsurf' ] = ['somle_Lf','sosstsst','sosaline','sossheig'] # sst, sss, drho
+to_plot[ 'gridUsurf' ] = ['vozocrtx','soextwbi','sointwbi']            # u-current
+to_plot[ 'gridVsurf' ] = ['vomecrty','soextwbj','sointwbj']            # v-current
 to_plot[ 'flxT' ] = ['sohefldo','sosfldow','sowaflup']      # heat, salt, water fluxes
 # ============================================================
 #                       3D Fields to plot
 # ============================================================
-to_plot[ 'gridT' ] = ['votemper','vosaline','voextrho']     # T, S, drho
-to_plot[ 'gridU' ] = ['vozocrtx']                           # u-current
-to_plot[ 'gridV' ] = ['vomecrty']                           # v-current
-to_plot[ 'gridW' ] = ['vovecrtz']                           # w-current
-to_plot[ 'EKE' ] = ['voeke','vomke','votke']                # eke, mke, tke
-to_plot[ 'VT' ]  = ['vomevt','vomevs','vozout','vozous']    # vt, vs, ut, us
+#to_plot[ 'gridT' ] = ['votemper','vosaline']     # T, S, drho
+#to_plot[ 'gridU' ] = ['vozocrtx']                # u-current
+#to_plot[ 'gridV' ] = ['vomecrty']                # v-current
+#to_plot[ 'gridW' ] = ['vovecrtz']                           # w-current
+#to_plot[ 'EKE' ] = ['voeke','vomke','votke']                # eke, mke, tke
+#to_plot[ 'VT' ]  = ['vomevt','vomevs','vozout','vozous']    # vt, vs, ut, us
 # ============================================================
 
 
-def main(respath,plotpath,confcase,freq,year,month,day):
+def main(respath,plotpath,confcase,freq,year,month,day,depth):
     global to_plot
     global infos
 
@@ -118,11 +123,14 @@ def main(respath,plotpath,confcase,freq,year,month,day):
                 if data is None:
                     data = np.zeros(lon.shape())
                 if dpt is not None:
-                    print(f'Depth not handled for 3D fields yet, plotting only surface')
-                    data = data[0,:,:]
-                        
+                    print(f'   at level {depth}')
+                    data = data[depth,:,:]
+
                 # plot
-                output = plotpath + '/' + confcase + '_y' + year + 'm' + month + 'd' + day + '.' + freq + '_' + file + '_' + fld  + '.png'
+                if depth == 0:
+                    output = plotpath + '/' + confcase + '_y' + year + 'm' + month + 'd' + day + '.' + freq + '_' + file + '_' + fld  + '.png'
+                else:
+                    output = plotpath + '/' + confcase + '_y' + year + 'm' + month + 'd' + day + '.' + freq + '_' + file + '_' + fld  + '_dpt' + str(depth)  + '.png'
                 make_plot(data,lon,lat,infos[fld],output)
         else:
             print(f'File {grid_file} not found, ignored')
@@ -155,6 +163,7 @@ if __name__=="__main__":
     parser.add_argument('-y', dest='year', type=str, default=None)
     parser.add_argument('-m', dest='month', type=str, default=None)
     parser.add_argument('-d', dest='day', type=str, default=None)
+    parser.add_argument('-dpt', dest='depth', type=str, default=0)
     args = parser.parse_args()
     confcase = args.confcase
     freq = args.freq
@@ -162,6 +171,7 @@ if __name__=="__main__":
     month = args.month
     day = args.day
     dir = args.loc
+    depth = int(args.depth)
 
     # guess CONFCASE if not given
     if confcase == 'noconf':
@@ -205,4 +215,4 @@ if __name__=="__main__":
         os.makedirs(plotpath)
 
     # proceed
-    main(respath,plotpath,confcase,freq,year,month,day)
+    main(respath,plotpath,confcase,freq,year,month,day,depth)

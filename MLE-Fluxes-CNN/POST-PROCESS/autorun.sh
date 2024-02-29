@@ -1,9 +1,4 @@
 #!/bin/bash
-#
-# ./autorun.sh <start_year> <end_year> <xios_freq>
-#
-# This script automate the submission of DMONTOOLS jobs to compute all yearly means from <start_year> to <end_year> with parameters in config_<xios_freq>
-#
 
 # Check arguments number and format
 if [ "$#" -ne 3 ]; then
@@ -34,3 +29,6 @@ for ((i = $1; i <= $2; i++)); do
     echo "Submitting year $i"
     ./RUN_calmoy $i
 done
+
+# create final dir
+mkdir z$1-$2

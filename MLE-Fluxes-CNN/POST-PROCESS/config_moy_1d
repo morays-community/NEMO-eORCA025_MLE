@@ -14,7 +14,7 @@
 # it must be customized for each configuration
 
 CONFIG=eORCA025.L75                   
-CASE=GB.INF
+CASE=GADLB
 MACHINE=occigen2
 ACCOUNT=cli@cpu
 

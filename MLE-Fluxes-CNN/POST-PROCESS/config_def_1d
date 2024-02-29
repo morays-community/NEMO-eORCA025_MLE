@@ -16,7 +16,7 @@
 # Name of CONFIG and CASE
 
 CONFIG=eORCA025.L75
-CASE=GB.INF
+CASE=GADLB
 MACHINE=jean-zay
 NODETYPE=BDW28
 ulimit -s unlimited  # needed for occigen 
@@ -54,15 +54,14 @@ MESH_MASK_ID=$CONFIG     # root part of the mesh-mask files (likely  to be edite
 # define type of file for variables
 sshtyp=gridTsurf
 sshtyp2=gridTsurf2
-temtyp=gridT
-temtyp=gridT
-saltyp=gridT
-uzotyp=gridU
-uzotyp2=gridU2
-vmetyp=gridV
-vmetyp2=gridV2
-wvetyp=gridW
-wvetyp2=gridW2
+temtyp=gridTsurf
+saltyp=gridTsurf
+uzotyp=gridUsurf
+uzotyp2=gridUsurf2
+vmetyp=gridVsurf
+vmetyp2=gridVsurf2
+wvetyp=gridWsurf
+wvetyp2=gridWsurf2
 flxtyp=flxT
 icetyp=icemod
 # Heat/salt transport
@@ -101,7 +100,7 @@ uttyp=VT   # use to be VT in DRAKKAR
 
 EKE=0                    # compute EKE
 RMSSSH=0                 # compute RMS ssh and w
-TSMEAN=1                 # compute TSMEAN and ssh drift
+TSMEAN=0                 # compute TSMEAN and ssh drift
 TSLAT=0                  # compute TSMEAN and ssh drift for latitude bands 60S - 60N
 ICEMONTH=0               # compute monthly ice volume, area and extent
 GIB=0                    # compute Gibraltar diags (restoring zone)
@@ -109,7 +108,7 @@ KERG=0                   # compute Kerguelen diags (restoring zone)
 KERGb=0                  # compute Kerguelen diags for PISCES (restoring zone)
 ELNINO=0                 # compute El Nino monitoring SSTs
 TRP=0                    # compute barotropic transport accross section as given in section.dat (CTL dir)
-MHT=1                    # compute Meridional Heat Transport (advective and from surface fluxes)
+MHT=0                    # compute Meridional Heat Transport (advective and from surface fluxes)
 MOC=0                    # compute MOC ( need a sub basin mask file called new_maskglo.nc)
 MOCSIG=0                 # compute MOC in sigma coordinates
 # To be set if MOCSIG=1/2/3
@@ -206,7 +205,7 @@ ts_icenoaa=0             #  4. timeserie for ice compared with NOAA data (needs 
 ts_icetrd=0              #  5. timeserie for ice trends (needs ICEMONTH = 1)
 ts_maxmoc=0              #  6. timeserie for maximum and minimum MOC (needs MAXMOC = 1 and MHT = 1)
 ts_maxmoc40=0            #  7. timeserie for maximum and minimum MOC at 40 N (needs MAXMOC = 1)
-ts_mht1=1                #  8. timeserie for meridionnal heat transport (needs MHT = 1)
+ts_mht1=0                #  8. timeserie for meridionnal heat transport (needs MHT = 1)
 ts_nino=0                #  9. timeserie for el nino diags (needs ELNINO = 1)
 ts_tao=0                 # 10. timeserie for TAO diags (needs TAO = 1)
 ts_transports1=0         # 11. timeserie for transports (needs TRP = 1)

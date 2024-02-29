@@ -28,17 +28,20 @@ MODULE infmod
    PUBLIC inf_alloc          ! function called in inferences_init 
    PUBLIC inf_dealloc        ! function called in inferences_final
    PUBLIC inferences_init    ! routine called in nemogcm.F90
-   PUBLIC inferences         ! routine called in stpmlf.F90
+   PUBLIC inferences         ! routine called in tramle.F90
    PUBLIC inferences_final   ! routine called in nemogcm.F90
 
-   INTEGER, PARAMETER ::   jps_st = 1    ! sea temperature
-   INTEGER, PARAMETER ::   jps_ss = 2    ! sea salinity
-   INTEGER, PARAMETER ::   jps_mu = 3    ! u mask
-   INTEGER, PARAMETER ::   jps_mv = 4    ! u mask
-   INTEGER, PARAMETER ::   jps_inf = 4   ! total number of sendings for inferences
+   INTEGER, PARAMETER ::   jps_e1u = 1    ! di[ x ] on u-grid
+   INTEGER, PARAMETER ::   jps_e2v = 2    ! dj[ y ] on v-grid
+   INTEGER, PARAMETER ::   jps_hu = 3     ! mixed-layer-depth on u-grid
+   INTEGER, PARAMETER ::   jps_hv = 4     ! mixed-layer-depth on v-grid
+   INTEGER, PARAMETER ::   jps_dbu = 5    ! di[ b ] on u-grid
+   INTEGER, PARAMETER ::   jps_dbv = 6    ! dj[ b ] on v-grid
+   INTEGER, PARAMETER ::   jps_inf = 6    ! total number of sendings for inferences
 
-   INTEGER, PARAMETER ::   jpr_rho = 1   ! density inferences-computed
-   INTEGER, PARAMETER ::   jpr_inf = 1   ! total number of inference receptions
+   INTEGER, PARAMETER ::   jpr_wbi = 1   ! i-vertical buoyancy flux on u-grid
+   INTEGER, PARAMETER ::   jpr_wbj = 2   ! j-vertical buoyancy flux on v-grid
+   INTEGER, PARAMETER ::   jpr_inf = 2    ! total number of inference receptions
 
    INTEGER, PARAMETER ::   jpinf = MAX(jps_inf,jpr_inf) ! Maximum number of exchanges
 
@@ -129,8 +132,6 @@ CONTAINS
       IF ( lwp .AND. ln_inf ) THEN
          WRITE(numout,*)'   Namelist naminf'
          WRITE(numout,*)'      Module used       ln_inf        = ', ln_inf
-         WRITE(numout,*)'      Models available:'
-         WRITE(numout,*)'         Stanley et al. (2020)        = ', 'T by default for now'
       ENDIF
       !
       IF( ln_inf .AND. .NOT. lk_oasis )   CALL ctl_stop( 'inferences_init : External inferences coupled via OASIS, but key_oasis3 disabled' )
@@ -150,27 +151,43 @@ CONTAINS
       IF( ln_inf ) THEN
       
          ! -------------------------------- !
-         !      Kenigson et al. (2022)      !
+         !          MLE-Fluxes-CNN          !
          ! -------------------------------- !
+         ! sending Hu and Hv
+         ssnd(ntypinf,jps_hu)%clname = 'E_OUT_0'
+         ssnd(ntypinf,jps_hu)%laction = .TRUE.
+         ssnd(ntypinf,jps_hu)%clgrid = 'U'
 
-         ! sending of sea surface temparature
-         ssnd(ntypinf,jps_st)%clname = 'E_OUT_0'
-         ssnd(ntypinf,jps_st)%laction = .TRUE.
+         ssnd(ntypinf,jps_hv)%clname = 'E_OUT_1'
+         ssnd(ntypinf,jps_hv)%laction = .TRUE.
+         ssnd(ntypinf,jps_hv)%clgrid = 'V'
 
-         ! sending of sea surface salinity
-         ssnd(ntypinf,jps_ss)%clname = 'E_OUT_1'
-         ssnd(ntypinf,jps_ss)%laction = .TRUE.
+         ! sending Delta_i_b and Delta_j_b
+         ssnd(ntypinf,jps_dbu)%clname = 'E_OUT_2'
+         ssnd(ntypinf,jps_dbu)%laction = .TRUE.
+         ssnd(ntypinf,jps_dbu)%clgrid = 'U'
 
-         ! sending of u-grid and v-grid masks
-         ssnd(ntypinf,jps_mu)%clname = 'E_OUT_2'
-         ssnd(ntypinf,jps_mu)%laction = .TRUE.
+         ssnd(ntypinf,jps_dbv)%clname = 'E_OUT_3'
+         ssnd(ntypinf,jps_dbv)%laction = .TRUE.
+         ssnd(ntypinf,jps_dbv)%clgrid = 'V'
 
-         ssnd(ntypinf,jps_mv)%clname = 'E_OUT_3'
-         ssnd(ntypinf,jps_mv)%laction = .TRUE.
+         ! sending e1u and e2v
+         ssnd(ntypinf,jps_e1u)%clname = 'E_OUT_4'
+         ssnd(ntypinf,jps_e1u)%laction = .TRUE.
+         ssnd(ntypinf,jps_e1u)%clgrid = 'U'
 
-         ! reception of sea surface density
-         srcv(ntypinf,jpr_rho)%clname = 'E_IN_0'
-         srcv(ntypinf,jpr_rho)%laction = .TRUE.
+         ssnd(ntypinf,jps_e2v)%clname = 'E_OUT_5'
+         ssnd(ntypinf,jps_e2v)%laction = .TRUE.
+         ssnd(ntypinf,jps_e2v)%clgrid = 'V'
+
+         ! reception of wb_u and wb_v
+         srcv(ntypinf,jpr_wbi)%clname = 'E_IN_0'
+         srcv(ntypinf,jpr_wbi)%laction = .TRUE.
+         srcv(ntypinf,jpr_wbi)%clgrid = 'U'
+
+         srcv(ntypinf,jpr_wbj)%clname = 'E_IN_1'
+         srcv(ntypinf,jpr_wbj)%laction = .TRUE.
+         srcv(ntypinf,jpr_wbj)%clgrid = 'V'
 
          ! ------------------------------ !
          ! ------------------------------ !
@@ -188,7 +205,7 @@ CONTAINS
    END SUBROUTINE inferences_init
 
 
-   SUBROUTINE inferences( kt, Kbb, Kmm, Kaa )
+   SUBROUTINE inferences( kt, Kbb, Kmm, Kaa, Hu, Hv, dbu, dbv )
       !!----------------------------------------------------------------------
       !!             ***  ROUTINE inferences  ***
       !!
@@ -199,6 +216,8 @@ CONTAINS
       !!----------------------------------------------------------------------
       INTEGER, INTENT(in) ::   kt            ! ocean time step
       INTEGER, INTENT(in) ::   Kbb, Kmm, Kaa ! ocean time level indices
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(in) ::  Hu, Hv, dbu, dbv    ! sending buffer
+      !
       !
       INTEGER :: isec, info, jn                       ! local integer
       REAL(wp), DIMENSION(jpi,jpj,jpk)   ::  zdata    ! sending buffer
@@ -211,24 +230,22 @@ CONTAINS
       !
       ! ------  Prepare data to send ------
       !
-      ! Sea Surface Temperature
-      IF( ssnd(ntypinf,jps_st)%laction ) THEN
-         infsnd(jps_st)%z3(:,:,1:ssnd(ntypinf,jps_st)%nlvl) = ts(:,:,1:ssnd(ntypinf,jps_st)%nlvl,jp_tem,Kmm)
+      ! Hu and Hv
+      IF( ssnd(ntypinf,jps_hu)%laction .AND. ssnd(ntypinf,jps_hv)%laction ) THEN
+         infsnd(jps_hu)%z3(:,:,ssnd(ntypinf,jps_hu)%nlvl) = Hu(:,:)
+         infsnd(jps_hv)%z3(:,:,ssnd(ntypinf,jps_hv)%nlvl) = Hv(:,:)
       ENDIF  
-      !s
-      ! Sea Surface Salinity
-      IF( ssnd(ntypinf,jps_ss)%laction ) THEN
-         infsnd(jps_ss)%z3(:,:,1:ssnd(ntypinf,jps_ss)%nlvl) = ts(:,:,1:ssnd(ntypinf,jps_ss)%nlvl,jp_sal,Kmm)
+      !
+      ! Delta_i_b and Delta_j_b
+      IF( ssnd(ntypinf,jps_dbu)%laction .AND. ssnd(ntypinf,jps_dbv)%laction ) THEN
+         infsnd(jps_dbu)%z3(:,:,ssnd(ntypinf,jps_dbu)%nlvl) = dbu(:,:)
+         infsnd(jps_dbv)%z3(:,:,ssnd(ntypinf,jps_dbv)%nlvl) = dbv(:,:)
       ENDIF
       !
-      ! u-grid surface mask
-      IF( ssnd(ntypinf,jps_mu)%laction ) THEN
-          infsnd(jps_mu)%z3(:,:,1:ssnd(ntypinf,jps_mu)%nlvl) = umask(:,:,1:ssnd(ntypinf,jps_mu)%nlvl)
-      ENDIF
-      !
-      ! v-grid surface mask
-      IF( ssnd(ntypinf,jps_mv)%laction ) THEN
-          infsnd(jps_mv)%z3(:,:,1:ssnd(ntypinf,jps_mv)%nlvl) = vmask(:,:,1:ssnd(ntypinf,jps_mv)%nlvl)
+      ! e1u and e2v
+      IF( ssnd(ntypinf,jps_e1u)%laction .AND. ssnd(ntypinf,jps_e2v)%laction ) THEN
+          infsnd(jps_e1u)%z3(:,:,ssnd(ntypinf,jps_e1u)%nlvl) = e1u(:,:)
+          infsnd(jps_e2v)%z3(:,:,ssnd(ntypinf,jps_e2v)%nlvl) = e2v(:,:)
       ENDIF
       !
       ! ========================
@@ -255,10 +272,12 @@ CONTAINS
       !
       ! ------ Distribute receptions  ------
       !
-      ! Sea Surface density
-      IF( srcv(ntypinf,jpr_rho)%laction ) THEN
-         tmp_inf_2D(:,:) = infrcv(jpr_rho)%z3(:,:,1)
-         CALL iom_put( 'St_rho_2D', tmp_inf_2D(:,:) )
+      ! wb_u and wb_v
+      IF( srcv(ntypinf,jpr_wbi)%laction .AND. srcv(ntypinf,jpr_wbj)%laction ) THEN
+         ext_wbi(:,:) = infrcv(jpr_wbi)%z3(:,:,srcv(ntypinf,jpr_wbi)%nlvl)
+         ext_wbj(:,:) = infrcv(jpr_wbj)%z3(:,:,srcv(ntypinf,jpr_wbj)%nlvl)
+         CALL iom_put( 'ext_mlei_wb', ext_wbi )
+         CALL iom_put( 'ext_mlej_wb', ext_wbj )
       ENDIF
       !
       IF( ln_timing )   CALL timing_stop('inferences')

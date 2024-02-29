@@ -14,14 +14,14 @@
 # it must be customized for each configuration
 
 CONFIG=eORCA025.L75                   
-CASE=GB.INF
+CASE=GADLB
 MACHINE=occigen2
 ACCOUNT=cli@cpu
 
 CONFCASE=${CONFIG}-${CASE}
 
-TYP_LIST='gridT gridU gridV gridW icemod' # list of grid type
-XIOS=5d      # compute mean values from 5d output . If XIOS not used, set XIOS=
+TYP_LIST='gridTsurf gridUsurf gridVsurf flxT' # list of grid type
+XIOS=1d      # compute mean values from 5d output . If XIOS not used, set XIOS=
 NC4=1        # if set to 1 use netcdf4 capabilities of the cdftools 
 VVL=0        # if set to 1 use vvl capabilities of the  cdftools
 REMDIR=$DDIR # root directory for the -S dirs

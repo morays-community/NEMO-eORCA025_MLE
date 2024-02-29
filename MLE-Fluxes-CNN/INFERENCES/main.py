@@ -2,6 +2,7 @@
 import eophis
 from eophis import Freqs, Grids
 # other modules
+from math import sin, pi
 import argparse
 import os
 
@@ -13,13 +14,13 @@ def ocean_info():
     tunnel_config = list()
     tunnel_config.append( { 'label' : 'TO_NEMO_FIELDS', \
                             'grids' : { 'eORCA025' : Grids.eORCA025 }, \
-                            'exchs' : [ {'freq' : Freqs.DAILY, 'grd' : 'eORCA025', 'lvl' : 1, 'in' : ['sst','sss'], 'out' : ['rho']} ] }
+                            'exchs' : [ {'freq' : 900, 'grd' : 'eORCA025', 'lvl' : 1, 'in' : ['Hu','Hv','Db_u','Db_v'], 'out' : ['wb_u','wb_v']} ] }
                         )
                         
     # static coupling (manual send/receive)
     tunnel_config.append( { 'label' : 'TO_NEMO_METRICS', \
                             'grids' : { 'eORCA025' : Grids.eORCA025 }, \
-                            'exchs' : [ {'freq' : Freqs.STATIC, 'grd' : 'eORCA025', 'lvl' : 1, 'in' : ['mask_u','mask_v'], 'out' : []} ] }
+                            'exchs' : [ {'freq' : Freqs.STATIC, 'grd' : 'eORCA025', 'lvl' : 1, 'in' : ['e1u','e2v'], 'out' : []} ] }
                         )
                         
     return tunnel_config, nemo_nml
@@ -62,9 +63,19 @@ def production():
     # ++++++++
     from models import Std_Stanley, GTF_LinReg_Stanley, GTF_FCNN_Stanley, GTF_CNN_Stanley
 
-    # get masks
-    mask_u = nemo_metrics.receive('mask_u')
-    mask_v = nemo_metrics.receive('mask_v')
+    # get metrics
+    e1u = nemo_metrics.receive('e1u')
+    e2v = nemo_metrics.receive('e2v')
+
+    Ds_x = e1u
+    Ds_x [ Ds_x > 111.e3 ] = 111.e3
+    Ds_y = e2v
+    Ds_y [ Ds_y > 111.e3 ] = 111.e3
+
+    # constants
+    omega = 7.292115083046062e-5
+    Ce, Lat = nemo_nml.get('rn_ce','rn_lat')
+    C_Lfa = Ce / ( 5000.0 * 2.0 * omega * sin( Lat * pi / 180.) )
 
     #  Assemble
     # ++++++++++
@@ -72,7 +83,8 @@ def production():
     def loop_core(**inputs):
         outputs = {}
         
-        outputs['rho'] = Std_Stanley( T=inputs['sst'], S=inputs['sss'], mask_u=mask_u, mask_v=mask_v )
+        outputs['wb_u'] = vert_buoyancy_flux( db=inputs['Db_u'], H=inputs['Hu'] , S=Ds_x , dl=e1u, C_Lf=C_Lfa )
+        outputs['wb_v'] = vert_buoyancy_flux( db=inputs['Db_v'], H=inputs['Hv'] , S=Ds_y , dl=e2v, C_Lf=C_Lfa )
         
         return outputs
 
