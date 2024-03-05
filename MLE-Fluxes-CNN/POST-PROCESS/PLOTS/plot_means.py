@@ -27,6 +27,7 @@ infos[ 'sosstsst' ] = [ 'SST (degC)', cmocean.cm.thermal , colors.Normalize(vmin
 infos[ 'sosaline' ] = [ 'Salinity (psu)' , cmocean.cm.haline , colors.Normalize(vmin=28, vmax=38), lambda x: x ]
 infos[ 'sossheig' ] = [ 'SSH (m)' , cmocean.cm.deep , colors.Normalize(vmin=-2, vmax=2), lambda x: x ]
 infos[ 'soextrho' ] = [ '-\u0394\u03c1 (kg/m³)' , cmocean.cm.ice_r , colors.LogNorm(vmin=0.000005, vmax=0.05), lambda x: abs(x) ]
+infos[ 'somxl010' ] = [ 'Mixed Layer Depth (m)' , cmocean.cm.amp , colors.LogNorm(vmin=1.0 , vmax=5000), lambda x: x ]
 infos[ 'vozocrtx' ] = [ 'u (m/s)' , cmocean.cm.diff , colors.Normalize(vmin=-1.0, vmax=1.0), lambda x: x ]
 infos[ 'vomecrty' ] = [ 'v (m/s)' , cmocean.cm.diff , colors.Normalize(vmin=-0.5, vmax=0.5), lambda x: x ]
 infos[ 'vovecrtz' ] = [ 'w (m/s)' , cmocean.cm.diff , colors.Normalize(vmin=-0.0000005, vmax=0.0000005), lambda x: x]
@@ -51,23 +52,23 @@ infos[ 'sointwbj' ] = [ 'NEMO subgrid Vert. Buoyancy Flux V (m2/s)' , cmocean.cm
 # ============================================================
 #                           2D Fields
 # ============================================================
-to_plot[ 'gridTsurf' ] = ['somle_Lf','sosstsst','sosaline','sossheig'] # sst, sss, drho
+to_plot[ 'gridTsurf' ] = ['somle_Lf','sosstsst','sosaline','sossheig','somxl010'] # sst, sss, drho
 to_plot[ 'gridUsurf' ] = ['vozocrtx','soextwbi','sointwbi']            # u-current
 to_plot[ 'gridVsurf' ] = ['vomecrty','soextwbj','sointwbj']            # v-current
 to_plot[ 'flxT' ] = ['sohefldo','sosfldow','sowaflup']      # heat, salt, water fluxes
 # ============================================================
 #                           3D Fields
 # ============================================================
-#to_plot[ 'gridT' ] = ['votemper','vosaline']     # T, S, drho
+to_plot[ 'gridT' ] = ['votemper','vosaline']     # T, S, drho
 #to_plot[ 'gridU' ] = ['vozocrtx']                # u-current
 #to_plot[ 'gridV' ] = ['vomecrty']                # v-current
-#to_plot[ 'gridW' ] = ['vovecrtz']                           # w-current
+to_plot[ 'gridW' ] = ['vovecrtz']                           # w-current
 to_plot[ 'EKE' ] = ['voeke','vomke','votke']                # eke, mke, tke
-#to_plot[ 'VT' ]  = ['vomevt','vomevs','vozout','vozous']    # vt, vs, ut, us
+to_plot[ 'VT' ]  = ['vomevt','vomevs','vozout','vozous']    # vt, vs, ut, us
 # ============================================================
 
 
-def main(respath,plotpath,confcase,freq,years,depth):
+def main(respath,plotpath,confcase,freq,years,months,depth):
     global to_plot
     global infos
 
@@ -80,14 +81,13 @@ def main(respath,plotpath,confcase,freq,years,depth):
             sys.exit()
         os.chdir(freq_path)
         if years[0] is None:
-            years = os.listdir(os.getcwd())        
+            years = os.listdir(os.getcwd())
 
         # loop on years directories
         for i,year in enumerate(years):
             print(f'\n{year}:')
             print(f'----')
             year_path = freq_path+'/'+year
-            file_base = year_path + '/'+confcase+'_y'+year+'.'+freq
             os.chdir(year_path)
 
             # check output directory
@@ -95,48 +95,61 @@ def main(respath,plotpath,confcase,freq,years,depth):
             if not os.path.exists(outpath):
                 os.makedirs(outpath)
 
-            # loop on yearly files
-            for file in to_plot.keys():
-                grid_file = file_base + '_' + file + '.nc'
-                
-                # get mesh and data if file exists
-                if os.path.isfile(grid_file):
-                    ds=xr.open_dataset(grid_file)
-                    lon = ds.nav_lon.values
-                    lat = ds.nav_lat.values
-                    try:
-                        dpt = ds.deptht.values
-                    except Exception as e0:
-                        try:
-                            dpt = ds.depthu.values
-                        except Exception as e1:
-                            try:
-                                dpt = ds.depthv.values
-                            except Exception as e2:
-                                try:
-                                    dpt = ds.depthw.values
-                                except Exception as e3:
-                                    dpt = None                    
-
-                    # loop on fields
-                    for fld in to_plot[file]:
-                        print(f'Plotting {fld}')
-                        data = getattr(ds,fld).values[-1]
-                        # check data
-                        if data is None:
-                            data = np.zeros(lon.shape())
-                        if dpt is not None:
-                            print(f'   at level {depth}')
-                            data = data[depth,:,:]
-                            
-                        # plot
-                        if depth == 0:
-                            output = outpath + '/' + confcase + '_y' + year + '.' + freq + '_' + file + '_' + fld + '.png'
-                        else:
-                            output = outpath + '/' + confcase + '_y' + year + '.' + freq + '_' + file + '_' + fld + '_dpt' + str(depth) + '.png'
-                        make_plot(data,lon,lat,infos[fld],output)
+            # loop on yearly and monthly files
+            for month in months:
+                if month is None:
+                    file_base = year_path + '/'+confcase+'_y'+year+'.'+freq
                 else:
-                    print(f'File {grid_file} not found, ignored')
+                    print(f'\n   - {month}:')
+                    print(f'   ----')
+                    file_base = year_path + '/'+confcase+'_y'+year+'m'+month+'.'+freq
+
+                # loop on grids
+                for file in to_plot.keys():
+                    grid_file = file_base + '_' + file + '.nc'
+                
+                    # get mesh and data if file exists
+                    if os.path.isfile(grid_file):
+                        ds=xr.open_dataset(grid_file)
+                        lon = ds.nav_lon.values
+                        lat = ds.nav_lat.values
+                        try:
+                            dpt = ds.deptht.values
+                        except Exception as e0:
+                            try:
+                                dpt = ds.depthu.values
+                            except Exception as e1:
+                                try:
+                                    dpt = ds.depthv.values
+                                except Exception as e2:
+                                    try:
+                                        dpt = ds.depthw.values
+                                    except Exception as e3:
+                                        dpt = None
+
+                        # loop on fields
+                        for fld in to_plot[file]:
+                            print(f'Plotting {fld}')
+                            data = getattr(ds,fld).values[-1]
+                            # check data
+                            if data is None:
+                                data = np.zeros(lon.shape())
+                            if dpt is not None:
+                                print(f'   at level {depth}')
+                                data = data[depth,:,:]
+                            
+                            # plot
+                            if month is None:
+                                mth = ''
+                            else:
+                                mth = 'm'+month
+                            if depth == 0:
+                                output = outpath + '/' + confcase + '_y' + year + mth + '.' + freq + '_' + file + '_' + fld + '.png'
+                            else:
+                                output = outpath + '/' + confcase + '_y' + year + mth + '.' + freq + '_' + file + '_' + fld + '_dpt' + str(depth) + '.png'
+                            make_plot(data,lon,lat,infos[fld],output)
+                    else:
+                        print(f'File {grid_file} not found, ignored')
 
 
 def make_plot(data,lon,lat,infos,output):
@@ -163,12 +176,19 @@ if __name__=="__main__":
     parser.add_argument('-c', dest='confcase', type=str, default='noconf')
     parser.add_argument('-f', nargs='+', dest='freqs', type=str, default=['1d'])
     parser.add_argument('-y', nargs='+', dest='years', type=str, default=[None])
+    parser.add_argument('-m', nargs='+', dest='months', type=int, default=[None])
     parser.add_argument('-dpt', dest='depth', type=str, default=0)    
     args = parser.parse_args()
+
     confcase = args.confcase
     freqs = args.freqs
     years = args.years
     depth = int(args.depth)
+    months = [None]
+    if args.months[0] is not None:
+        for mth in args.months:
+            months.append( str("{:02d}".format(mth)) )
+
 
     # check freqs args
     for freq in freqs:
@@ -211,4 +231,4 @@ if __name__=="__main__":
         os.mkdir(plotpath)
 
     # proceed
-    main(respath,plotpath,confcase,freqs,years,depth)
+    main(respath,plotpath,confcase,freqs,years,months,depth)
