@@ -61,7 +61,7 @@ def production():
 
     #  Models
     # ++++++++
-    from models import Std_Stanley, GTF_LinReg_Stanley, GTF_FCNN_Stanley, GTF_CNN_Stanley
+    from models import vert_buoyancy_flux
 
     # get metrics
     e1u = nemo_metrics.receive('e1u')

@@ -45,10 +45,10 @@ infos[ 'votemper' ] = [ 'Temperature (degC)' , cmocean.cm.thermal , colors.Norma
 infos[ 'vosaline' ] = [ 'Salinity (psu)' , cmocean.cm.haline , colors.Normalize(vmin=28, vmax=38), lambda x: x ]
 infos[ 'voextrho' ] = [ '-\u0394\u03c1 (kg/m³)' , cmocean.cm.ice_r , colors.LogNorm(vmin=0.000005, vmax=0.05), lambda x: x ]
 infos[ 'somle_Lf' ] = [ 'ML Rossby Radius (m)' , cmocean.cm.dense , colors.LogNorm(vmin=10.0, vmax=15000.0), lambda x: x ]
-infos[ 'soextwbi' ] = [ 'INF subgrid Vert. Buoyancy Flux U (m2/s)' , cmocean.cm.balance , colors.Normalize(vmin=-15., vmax=20.), lambda x: x ]
-infos[ 'soextwbj' ] = [ 'INF subgrid Vert. Buoyancy Flux V (m2/s)' , cmocean.cm.balance , colors.Normalize(vmin=-20., vmax=20.), lambda x: x ]
-infos[ 'sointwbi' ] = [ 'NEMO subgrid Vert. Buoyancy Flux U (m2/s)' , cmocean.cm.balance , colors.Normalize(vmin=-15., vmax=20.), lambda x: x ]
-infos[ 'sointwbj' ] = [ 'NEMO subgrid Vert. Buoyancy Flux V (m2/s)' , cmocean.cm.balance , colors.Normalize(vmin=-20., vmax=20.), lambda x: x ]
+infos[ 'soextwbi' ] = [ 'INF subgrid Vert. Buoyancy Flux U (m2/s)' , cmocean.cm.balance , colors.SymLogNorm(linthresh=0.1, vmin=-1., vmax=50.), lambda x: x ]
+infos[ 'soextwbj' ] = [ 'INF subgrid Vert. Buoyancy Flux V (m2/s)' , cmocean.cm.balance , colors.SymLogNorm(linthresh=0.1, vmin=-1., vmax=50.), lambda x: x ]
+infos[ 'sointwbi' ] = [ 'NEMO subgrid Vert. Buoyancy Flux U (m2/s)' , cmocean.cm.balance , colors.SymLogNorm(linthresh=0.1, vmin=-1., vmax=50.), lambda x: x ]
+infos[ 'sointwbj' ] = [ 'NEMO subgrid Vert. Buoyancy Flux V (m2/s)' , cmocean.cm.balance , colors.SymLogNorm(linthresh=0.1, vmin=-1., vmax=50.), lambda x: x ]
 # ============================================================
 #                       2D Fields to plot
 # ============================================================

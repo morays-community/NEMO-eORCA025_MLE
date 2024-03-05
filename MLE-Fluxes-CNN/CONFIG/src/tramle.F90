@@ -21,6 +21,7 @@ MODULE tramle
    USE lbclnk         ! lateral boundary condition / mpp link
    !
    USE infmod         ! external exchanges
+   USE inffld
 
    ! where OSMOSIS_OBL is used with integrated FK
    USE zdf_oce, ONLY : ln_zdfosm
@@ -225,6 +226,8 @@ CONTAINS
          ENDIF
          !                                      !==  External computation of MLE ==!
          CALL inferences( kt , 0, 0, 0, zhu, zhv, dbu, dbv )
+         zpsim_u(:,:) = ext_wbi(:,:) * e2u(:,:)    ! replace external MLE 
+         zpsim_v(:,:) = ext_wbj(:,:) * e1v(:,:)
          !
          IF( nn_conv == 1 ) THEN              ! No MLE in case of convection
             DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
