@@ -1,4 +1,4 @@
-# MLE-Fluxes-CNN
+# MLE-Fluxes
 
 ...WORK IN PROGRESS...
 
