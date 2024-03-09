@@ -1,0 +1,10 @@
+name: plots
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10.4
+  - numpy 
+  - matplotlib 
+  - cartopy 
+  - xarray
+  - cmocean
