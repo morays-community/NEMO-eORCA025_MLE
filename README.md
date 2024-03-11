@@ -7,7 +7,7 @@ Purpose of this experiment is to compute the vertical buoyancy fluxes induced by
 Internal and external computed fluxes are written in an output file with the NEMO output system (XIOS).
 
 #### Variations
-- **STD** : External standard computation, as described in [Calvert et al. (2020)](https://doi.org/10.1016/j.ocemod.2020.101678)
+- **STD** : External standard computation, as described in [Calvert et al. (2020)](https://doi.org/10.1016/j.ocemod.2020.101678) with retroaction on the solution
 - **CNN** : Fluxes computed from pre-trained [Bodner, Balwada and Zanna (2024)]() CNN
 
 ## Experiments Requirements
