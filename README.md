@@ -8,7 +8,7 @@ Internal and external computed fluxes are written in an output file with the NEM
 
 #### Variations
 - **STD** : External standard computation, as described in [Calvert et al. (2020)](https://doi.org/10.1016/j.ocemod.2020.101678) with retroaction on the solution
-- **CNN** : Fluxes computed from pre-trained [Bodner, Balwada and Zanna (2024)]() CNN
+- **CNN** : Fluxes computed from pre-trained [Bodner, Balwada and Zanna (2024)]() CNN `...WORK IN PROGRESS...`
 
 ## Experiments Requirements
 
