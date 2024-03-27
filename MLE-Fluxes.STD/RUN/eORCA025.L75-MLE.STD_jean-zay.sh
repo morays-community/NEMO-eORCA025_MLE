@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --ntasks=1000
+#SBATCH --ntasks=1009
 #SBATCH -J nemo_jean-zay
 #SBATCH -e nemo_jean-zay.e%j
 #SBATCH -o nemo_jean-zay.o%j
@@ -21,7 +21,7 @@ ulimit -s
 ulimit -s unlimited
 
 CONFIG=eORCA025.L75
-CASE=GADLB
+CASE=MLE.STD
 
 CONFCASE=${CONFIG}-${CASE}
 CTL_DIR=$PDIR/RUN_${CONFIG}/${CONFCASE}/CTL
@@ -39,7 +39,7 @@ export NB_NCORE_DP=0   # activate depopulated core computation for XIOS. If not 
                        # the number of cores used by XIOS on each exclusive node.
 
 # OASIS coupling - set to 0 if not
-export NB_NPROC_PYCPL=1   # number of cores used for coupled python script
+export NB_NPROC_PYCPL=10   # number of cores used for coupled python script
 
 # Rebuild process 
 export MERGE=0         # 1 = on the fly rebuild, 0 = dedicated job

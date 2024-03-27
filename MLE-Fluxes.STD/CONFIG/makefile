@@ -8,7 +8,7 @@
 
 
 CONFIG = eORCA025.L75
-CASE = GB.INF
+CASE = MLE.STD
 CASEREF = 'none'
 
 # PREV_CONFIG  (type the full path or 'none' )

@@ -22,7 +22,7 @@ set -x
 #########################################################################
 
  CONFIG=eORCA025.L75
- CASE=GADLB
+ CASE=MLE.STD
  CONFIG_CASE=${CONFIG}-${CASE}
 
 # Environmemt and miscelaneous
@@ -59,7 +59,7 @@ CLI_DIR=/gpfswork/rech/cli/rcli002/
 F_S_DIR=${SDIR}/${CONFIG}/${CONFIG_CASE}-S       # Stockage
 F_R_DIR=${SDIR}/${CONFIG}/${CONFIG_CASE}-R       # Restarts
 F_I_DIR=${SDIR}/${CONFIG}/${CONFIG}-I            # Initial + data
-F_DTA_DIR=${CLI_DIR}/${CONFIG}/${CONFIG}-I          # data dir
+F_DTA_DIR=${SDIR}/${CONFIG}/${CONFIG}-I          # data dir
 F_FOR_DIR=${ROTE_DIR}/DATA_FORCING/DFS5.2_RD/ALL    # in function 3.2
 F_OBC_DIR=${SDIR}/${CONFIG}/${CONFIG}-I/OBC      # OBC files
 F_BDY_DIR=${SDIR}/${CONFIG}/${CONFIG}-I/BDY      # BDY files
@@ -75,7 +75,7 @@ F_OBS_DIR=/ccc/work/cont003/drakkar/drakkar      # for OBS operator
 P_S_DIR=$DDIR/${CONFIG}/${CONFIG_CASE}-S
 P_R_DIR=$DDIR/${CONFIG}/${CONFIG_CASE}-R
 P_I_DIR=$DDIR/${CONFIG}/${CONFIG}-I                  # mirror on the production machine of the F_I_DIR
-P_DTA_DIR=$CLI_DIR/${CONFIG}/${CONFIG}-I             # mirror on the production machine of the F_I_DIR
+P_DTA_DIR=$DDIR/${CONFIG}/${CONFIG}-I             # mirror on the production machine of the F_I_DIR
 P_FOR_DIR=${CLI_DIR}/DATA_FORCING/JRA55/drowned      # forcing files
 P_OBC_DIR=${DDIR}/${CONFIG}/${CONFIG}-I/OBC          # OBC files
 P_BDY_DIR=${DDIR}/${CONFIG}/${CONFIG}-I/BDY          # BDY files
@@ -154,4 +154,4 @@ AGRIF_FIXED_GRID=AGRIF_FixedGrids.in                  ; NEMO_AGRIF_FIXED_GRID=AG
 
 # Control parameters
 # -----------------
-MAXSUB=14                # resubmit job till job $MAXSUB
+MAXSUB=12                # resubmit job till job $MAXSUB

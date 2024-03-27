@@ -9,7 +9,6 @@ A model must fit the following requisites and structure :
     4. ...outputs must be formatted as numpy array for sending back
 """
 import numpy as np
-import gsw
 
 # --------- utils ---------- #
 def Is_None(*inputs):
