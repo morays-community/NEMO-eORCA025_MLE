@@ -41,7 +41,7 @@
    nn_time0    =       0             !  initial time of day in hhmm
    nn_leapy    =       1             !  Leap year calendar (1) or not (0)
    ln_rstart   =  <RESTART>             !  start from rest (F) or from a restart file (T)
-      ln_1st_euler = .false.  !  =T force a start with forward time step (ln_rstart=T)
+      ln_1st_euler = .true.  !  =T force a start with forward time step (ln_rstart=T)
       nn_rstctl   =       2   !  restart control => activated only if ln_rstart = T
                               !    = 0 nn_date0 read in namelist ; nn_it000 : read in namelist
                               !    = 1 nn_date0 read in namelist ; nn_it000 : check consistancy between namelist and restart
@@ -71,7 +71,7 @@
 !-----------------------------------------------------------------------
    ln_linssh   = .false.   !  =T  linear free surface  ==>>  model level are fixed in time
    !
-   rn_Dt       =    900.   !  time step for the dynamics and tracer  # 150 # 300.0 # 900.0
+   rn_Dt       =    900.   !  time step for the dynamics and tracer
    rn_atfp     =    0.1    !  asselin time filter parameter
    !
    ln_crs      = .false.   !  Logical switch for coarsening module      (T => fill namcrs)
@@ -84,7 +84,7 @@
 !-----------------------------------------------------------------------
    ln_read_cfg = .true.     !  (=T) read the domain configuration file
       !                      !  (=F) user defined configuration           (F => create/check namusr_def)
-      cn_domcfg = "eORCA025.L75_domain_cfg_closed_seas_greenland"  ! domain configuration filename
+      cn_domcfg = "eORCA025.L75_domain_cfg_closed_seas_greenland_4.2"  ! domain configuration filename
       !
       ln_closea    = .false. !  (=T => fill namclo) 
       !                      !  (=F) no control of net precip/evap over closed sea
@@ -127,8 +127,8 @@
    !___________!_________________________!___________________!___________!_____________!________!___________!__________________!__________!_______________!
    !           !  file name              ! frequency (hours) ! variable  ! time interp.!  clim  ! 'yearly'/ ! weights filename ! rotation ! land/sea mask !
    !           !                         !  (if <0  months)  !   name    !   (logical) !  (T/F) ! 'monthly' !                  ! pairing  !    filename   !
-   sn_tem = 'eORCA025.L75_81B0_WOA18_1m_CT_checked',  -1.     , 'CT',   .false.    , .true. , 'yearly'  ,    ''            ,    ''    ,    ''
-   sn_sal = 'eORCA025.L75_81B0_WOA18_1m_SA_checked',  -1.     , 'SA',   .false.    , .true. , 'yearly'  ,    ''            ,    ''    ,    ''
+   sn_tem = 'eORCA025.L75_81B0_WOA18_1m_CT_checked_4.2',  -1.     , 'CT',   .false.    , .true. , 'yearly'  ,    ''            ,    ''    ,    ''
+   sn_sal = 'eORCA025.L75_81B0_WOA18_1m_SA_checked_4.2',  -1.     , 'SA',   .false.    , .true. , 'yearly'  ,    ''            ,    ''    ,    ''
 /
 !-----------------------------------------------------------------------
 &namwad        !   Wetting and Drying (WaD)                             (default: OFF)
@@ -291,15 +291,15 @@
    !___________!_________________________!___________________!___________!_____________!________!___________!______________________________________!__________!_______________!
    !           !  file name              ! frequency (hours) ! variable  ! time interp.!  clim  ! 'yearly'/ !       weights filename               ! rotation ! land/sea mask !
    !           !                         !  (if <0  months)  !   name    !   (logical) !  (T/F) ! 'monthly' !                                      ! pairing  !    filename   !
-   sn_wndi = 'drowned_uas_JRA55'    ,  3.         ,  'uas'    ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bicub.nc' , 'U1' ,   ''
-   sn_wndj = 'drowned_vas_JRA55'    ,  3.         ,  'vas'    ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bicub.nc' , 'V1' ,   ''
-   sn_qsr  = 'drowned_rsds_JRA55_1d' , 24.        ,  'rsds'   ,    .false.  , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin.nc' , ''   ,   ''
-   sn_qlw  = 'drowned_rlds_JRA55'   ,  3.         ,  'rlds '  ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin.nc' , ''   ,   ''
-   sn_tair = 'drowned_tas_JRA55'    ,  3.         ,  'tas'    ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin.nc' , ''   ,   ''
-   sn_humi = 'drowned_huss_JRA55'   ,  3.         ,  'huss'   ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin.nc' , ''   ,   ''
-   sn_prec = 'drowned_tprecip_JRA55' , 3.         ,  'tprecip',    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin.nc' , ''   ,   ''
-   sn_snow = 'drowned_prsn_JRA55 '  ,  3.         ,  'prsn'   ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin.nc' , ''   ,   ''
-   sn_slp  = 'drowned_psl_JRA55'    ,  3.         ,  'psl'    ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin.nc' , ''   ,   ''
+   sn_wndi = 'drowned_uas_JRA55'    ,  3.         ,  'uas'    ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bicub_4.2.nc' , 'U1' ,   ''
+   sn_wndj = 'drowned_vas_JRA55'    ,  3.         ,  'vas'    ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bicub_4.2.nc' , 'V1' ,   ''
+   sn_qsr  = 'drowned_rsds_JRA55_1d' , 24.        ,  'rsds'   ,    .false.  , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin_4.2.nc' , ''   ,   ''
+   sn_qlw  = 'drowned_rlds_JRA55'   ,  3.         ,  'rlds '  ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin_4.2.nc' , ''   ,   ''
+   sn_tair = 'drowned_tas_JRA55'    ,  3.         ,  'tas'    ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin_4.2.nc' , ''   ,   ''
+   sn_humi = 'drowned_huss_JRA55'   ,  3.         ,  'huss'   ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin_4.2.nc' , ''   ,   ''
+   sn_prec = 'drowned_tprecip_JRA55' , 3.         ,  'tprecip',    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin_4.2.nc' , ''   ,   ''
+   sn_snow = 'drowned_prsn_JRA55 '  ,  3.         ,  'prsn'   ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin_4.2.nc' , ''   ,   ''
+   sn_slp  = 'drowned_psl_JRA55'    ,  3.         ,  'psl'    ,    .true.   , .false. , 'yearly'  , 'wght_JRA55_eORCA025_bilin_4.2.nc' , ''   ,   ''
    sn_uoatm    = 'NOT USED'              ,         6.        , 'UOATM'   ,   .false.   , .true. , 'yearly'  ,  'w_bilin.nc'            , 'Uoceatm',  ''
    sn_voatm    = 'NOT USED'              ,         6.        , 'VOATM'   ,   .false.   , .true. , 'yearly'  ,  'w_bilin.nc'            , 'Voceatm',  ''
    sn_cc   = 'NOT USED'             ,   24.       , 'CC'      ,   .false.   , .true. , 'yearly'  , 'weights_core_orca2_bilinear_noc.nc' '' , ''
@@ -444,7 +444,7 @@
    !___________!_________________________!___________________!___________!_____________!________!___________!__________!__________!_______________!
    !           !  file name              ! frequency (hours) ! variable  ! time interp.!  clim  ! 'yearly'/ ! weights  ! rotation ! land/sea mask !
    !           !                         !  (if <0  months)  !   name    !   (logical) !  (T/F) ! 'monthly' ! filename ! pairing  !    filename   !
-   sn_chl      = 'chlorophyl_v0.0'       , -1. , 'CHLA'    ,   .true.    , .true. , 'yearly'  , 'wght_chlorophyl_eORCA025_bilin.nc' , ''       , ''
+   sn_chl      = 'chlorophyl_v0.0'       , -1. , 'CHLA'    ,   .true.    , .true. , 'yearly'  , 'wght_chlorophyl_eORCA025_bilin_4.2.nc' , ''       , ''
 /
 !-----------------------------------------------------------------------
 &namsbc_ssr    !   surface boundary condition : sea surface restoring   (ln_ssr =T)
@@ -488,11 +488,11 @@
    !___________!_________________________!___________________!___________!_____________!________!___________!__________________!__________!_______________!
    !           !  file name              ! frequency (hours) ! variable  ! time interp.!  clim  ! 'yearly'/ ! weights filename ! rotation ! land/sea mask !
    !           !                         !  (if <0  months)  !   name    !   (logical) !  (T/F) ! 'monthly' !                  ! pairing  !    filename   !
-   sn_rnf      = 'eORCA025_runoff_ISBA_noAA_noGR_clim_366' , 24.       , 'sorunoff'  , .true.     , .true. , 'yearly'  , ''       , '' , ''
-   sn_cnf      = 'eORCA025.L75_rnf_msk'                    ,-12.       , 'socoefr'   , .false.    , .true. , 'yearly'  , ''       , '' , ''
+   sn_rnf      = 'eORCA025_runoff_ISBA_noAA_noGR_clim_366_4.2' , 24.       , 'sorunoff'  , .true.     , .true. , 'yearly'  , ''       , '' , ''
+   sn_cnf      = 'eORCA025.L75_rnf_msk_4.2'                    ,-12.       , 'socoefr'   , .false.    , .true. , 'yearly'  , ''       , '' , ''
    sn_s_rnf    = ' '                                       , 24.       , 'rosaline'  , .true.     , .true. , 'yearly'  , ''       , '' , ''
    sn_t_rnf    = ' '                                       , 24.       , 'rotemper'  , .true.     , .true. , 'yearly'  , ''       , '' , ''
-   sn_dep_rnf  = 'eORCA025.L75_rnf_dep '                   ,  0.       , 'sozisfmax' , .false.    , .true. , 'yearly'  , ''       , '' , ''
+   sn_dep_rnf  = 'eORCA025.L75_rnf_dep_4.2 '                   ,  0.       , 'sozisfmax' , .false.    , .true. , 'yearly'  , ''       , '' , ''
    sn_i_rnf    = 'NOT_USED'                                , -1.       , 'sorunoff'  , .true.     , .true. , 'yearly'  , ''       , '' , ''
 /
 !-----------------------------------------------------------------------
@@ -852,7 +852,7 @@
    !___________!_________________________!___________________!___________!_____________!________!___________!__________________!__________!_______________!
    !           !  file name              ! frequency (hours) ! variable  ! time interp.!  clim  ! 'yearly'/ ! weights filename ! rotation ! land/sea mask !
    !           !                         !  (if <0  months)  !   name    !   (logical) !  (T/F) ! 'monthly' !                  ! pairing  !    filename   !
-   sn_qgh      = 'ghflux_v2.0'           ,       -12.        , 'gh_flux' ,   .false.   , .true. , 'yearly'  ,   'wght_ghflux_eORCA025_bilin.nc'             ,   ''     ,   ''
+   sn_qgh      = 'ghflux_v2.0'           ,       -12.        , 'gh_flux' ,   .false.   , .true. , 'yearly'  ,   'wght_ghflux_eORCA025_bilin_4.2.nc'             ,   ''     ,   ''
 /
 !-----------------------------------------------------------------------
 &nambbl        !   bottom boundary layer scheme                         (default: OFF)
@@ -993,7 +993,7 @@
       nn_zdmp  =    0         !  vertical shape =0    damping throughout the water column
       !                       !                 =1 no damping in the mixing layer (kz  criteria)
       !                       !                 =2 no damping in the mixed  layer (rho crieria)
-      cn_resto = 'eORCA025.L75_resto.nc'   !  Name of file containing restoration coeff. field (use dmp_tools to create this)
+      cn_resto = 'eORCA025.L75_resto_4.2.nc'   !  Name of file containing restoration coeff. field (use dmp_tools to create this)
 /
 
 !!======================================================================

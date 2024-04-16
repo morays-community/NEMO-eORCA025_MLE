@@ -19,7 +19,7 @@ def Is_None(*inputs):
 #             MLE              #
 # ============================ #
 def vert_buoyancy_flux(db,H,S,dl,C_Lf):
-    """ Compute vertical buoyancy flux with expression (7) from doi.org/10.1016/j.ocemod.2020.101678 """
+    """ Compute vertical buoyancy flux induced streamfunction with expression (13) from doi.org/10.1016/j.ocemod.2020.101678 """
     if Is_None(db,H):
         return None
     else:

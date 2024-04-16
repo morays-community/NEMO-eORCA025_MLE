@@ -5,7 +5,7 @@
 #SBATCH -o nemo_jean-zay.o%j
 #SBATCH -A cli@cpu
 #SBATCH --hint=nomultithread
-#SBATCH --time=08:00:00
+#SBATCH --time=10:00:00
 #SBATCH --exclusive
 
 # Python environment -- complete/modify/comment as you wish
@@ -13,7 +13,6 @@
 source $P_PYOASIS_DIR/python/init.sh
 source $P_PYOASIS_DIR/python/init.csh
 source ${HOME}/.bash_profile
-conda activate morays
 # ----------- 
 
 set -x
@@ -39,7 +38,7 @@ export NB_NCORE_DP=0   # activate depopulated core computation for XIOS. If not 
                        # the number of cores used by XIOS on each exclusive node.
 
 # OASIS coupling - set to 0 if not
-export NB_NPROC_PYCPL=10   # number of cores used for coupled python script
+export NB_NPROC_PYCPL=10  # number of cores used for coupled python script
 
 # Rebuild process 
 export MERGE=0         # 1 = on the fly rebuild, 0 = dedicated job

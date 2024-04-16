@@ -191,6 +191,7 @@ that are available in the tidal-forcing implementation (see
 
     <!-- variables available with MLE -->
     <field id="Lf_NHpf"      long_name="MLE: Lf = N H / f"   unit="m" />
+    <field id="ext_wb"       long_name="Externally computed vertical buoyancy flux" unit="W/m2" />
 
     <!-- next variables available with ln_zad_Aimp=.true. -->
     <field id="Courant"      long_name="Courant number"                                                                 unit="#"   grid_ref="grid_T_3D" />
@@ -621,8 +622,7 @@ that are available in the tidal-forcing implementation (see
 
     <!-- variables available with MLE (ln_mle=T) -->
     <field id="psiu_mle"     long_name="MLE streamfunction along i-axis"   unit="m3/s"   grid_ref="grid_U_3D" />
-    <field id="int_mlei_wb"  long_name="intern subgrid vert. buoyancy flx along i-axis"   unit="m2/s" />
-    <field id="ext_mlei_wb"  long_name="extern subgrid vert. buoyancy flx along i-axis"   unit="m2/s" />
+    <field id="ext_psiu_mle"  long_name="Externally computed MLE streamfunction along i-axis" unit="m2/s" />
 
     <!-- uoce_eiv: available EIV (ln_ldfeiv=T and ln_ldfeiv_dia=T) -->
     <field id="uoce_eiv"      long_name="EIV ocean current along i-axis"                                  standard_name="bolus_sea_water_x_velocity"                     unit="m/s"   grid_ref="grid_U_3D" />
@@ -683,8 +683,7 @@ that are available in the tidal-forcing implementation (see
 
     <!-- variables available with MLE (ln_mle=T) -->
     <field id="psiv_mle"     long_name="MLE streamfunction along j-axis"   unit="m3/s"   grid_ref="grid_V_3D" />
-    <field id="int_mlej_wb"  long_name="intern subgrid vert. buoyancy flx along j-axis"   unit="m2/s" />
-    <field id="ext_mlej_wb"  long_name="extern subgrid vert. buoyancy flx along j-axis"   unit="m2/s" />
+    <field id="ext_psiv_mle"  long_name="Externally computed MLE streamfunction along j-axis" unit="m2/s" />
 
     <!-- voce_eiv: available EIV (ln_ldfeiv=T and ln_ldfeiv_dia=T)  -->
     <field id="voce_eiv"     long_name="EIV ocean current along j-axis"  standard_name="bolus_sea_water_y_velocity"     unit="m/s"   grid_ref="grid_V_3D" />

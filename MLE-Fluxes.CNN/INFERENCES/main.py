@@ -2,7 +2,6 @@
 import eophis
 from eophis import Freqs, Grids
 # other modules
-from math import sin, pi
 import argparse
 import os
 
@@ -14,13 +13,15 @@ def ocean_info():
     tunnel_config = list()
     tunnel_config.append( { 'label' : 'TO_NEMO_FIELDS', \
                             'grids' : { 'eORCA025' : Grids.eORCA025 }, \
-                            'exchs' : [ {'freq' : 900, 'grd' : 'eORCA025', 'lvl' : 1, 'in' : ['Hu','Hv','Db_u','Db_v'], 'out' : ['wb_u','wb_v']} ] }
+                            'exchs' : [ {'freq' : 900, 'grd' : 'eORCA025', 'lvl' : 1, \
+                                         'in'  : ['grad_B','FCOR','HML','TAU','Q','div','vort','strain'], \
+                                         'out' : ['w_b']} ] }
                         )
                         
     # static coupling (manual send/receive)
     tunnel_config.append( { 'label' : 'TO_NEMO_METRICS', \
                             'grids' : { 'eORCA025' : Grids.eORCA025 }, \
-                            'exchs' : [ {'freq' : Freqs.STATIC, 'grd' : 'eORCA025', 'lvl' : 1, 'in' : ['e1u','e2v'], 'out' : []} ] }
+                            'exchs' : [ {'freq' : Freqs.STATIC, 'grd' : 'eORCA025', 'lvl' : 1, 'in' : ['tmask'], 'out' : []} ] }
                         )
                         
     return tunnel_config, nemo_nml
@@ -51,7 +52,6 @@ def production():
     tunnel_config, nemo_nml = ocean_info()
     step, it_end, it_0 = nemo_nml.get('rn_Dt','nn_itend','nn_it000')
     niter = it_end - it_0 + 1
-    total_time = niter * step
 
     # tunnel registration (lazy)
     nemo, nemo_metrics = eophis.register_tunnels( tunnel_config )
@@ -61,30 +61,21 @@ def production():
 
     #  Models
     # ++++++++
-    from models import vert_buoyancy_flux
+    from models import vert_buoyancy_flux_CNN
 
-    # get metrics
-    e1u = nemo_metrics.receive('e1u')
-    e2v = nemo_metrics.receive('e2v')
-
-    Ds_x = e1u
-    Ds_x [ Ds_x > 111.e3 ] = 111.e3
-    Ds_y = e2v
-    Ds_y [ Ds_y > 111.e3 ] = 111.e3
-
-    # constants
-    omega = 7.292115083046062e-5
-    Ce, Lat = nemo_nml.get('rn_ce','rn_lat')
-    C_Lfa = Ce / ( 5000.0 * 2.0 * omega * sin( Lat * pi / 180.) )
+    # get mask
+    tmask = nemo_metrics.receive('tmask')
 
     #  Assemble
     # ++++++++++
     @eophis.all_in_all_out(earth_system=nemo, step=step, niter=niter)
     def loop_core(**inputs):
+
+        arrays = ( inputs['grad_B'] , inputs['FCOR'], inputs['HML'], inputs['TAU'], \
+                     inputs['Q'], inputs['div'], inputs['vort'], inputs['strain']  )  
+
         outputs = {}
-        
-        outputs['wb_u'] = vert_buoyancy_flux( db=inputs['Db_u'], H=inputs['Hu'] , S=Ds_x , dl=e1u, C_Lf=C_Lfa )
-        outputs['wb_v'] = vert_buoyancy_flux( db=inputs['Db_v'], H=inputs['Hv'] , S=Ds_y , dl=e2v, C_Lf=C_Lfa )
+        outputs['w_b'] = vert_buoyancy_flux_CNN( arrays , tmask=tmask )
         
         return outputs
 

@@ -14,7 +14,7 @@ def ocean_info():
     tunnel_config = list()
     tunnel_config.append( { 'label' : 'TO_NEMO_FIELDS', \
                             'grids' : { 'eORCA025' : (1440,1206,0,0) }, \
-                            'exchs' : [ {'freq' : 900, 'grd' : 'eORCA025', 'lvl' : 1, 'in' : ['Hu','Hv','Db_u','Db_v'], 'out' : ['wb_u','wb_v']} ] }
+                            'exchs' : [ {'freq' : 900, 'grd' : 'eORCA025', 'lvl' : 1, 'in' : ['Hu','Hv','Db_u','Db_v'], 'out' : ['psi_u','psi_v']} ] }
                         )
                         
     # static coupling (manual send/receive)
@@ -83,8 +83,8 @@ def production():
     def loop_core(**inputs):
         outputs = {}
         
-        outputs['wb_u'] = vert_buoyancy_flux( db=inputs['Db_u'], H=inputs['Hu'] , S=Ds_x , dl=e1u, C_Lf=C_Lfa )
-        outputs['wb_v'] = vert_buoyancy_flux( db=inputs['Db_v'], H=inputs['Hv'] , S=Ds_y , dl=e2v, C_Lf=C_Lfa )
+        outputs['psi_u'] = vert_buoyancy_flux( db=inputs['Db_u'], H=inputs['Hu'] , S=Ds_x , dl=e1u, C_Lf=C_Lfa )
+        outputs['psi_v'] = vert_buoyancy_flux( db=inputs['Db_v'], H=inputs['Hv'] , S=Ds_y , dl=e2v, C_Lf=C_Lfa )
         
         return outputs
 

@@ -224,10 +224,10 @@ CONTAINS
                dbv(ji,jj) = zbm(ji,jj+1) - zbm(ji,jj)
             END_2D
          ENDIF
-         !                                      !==  External computation of MLE ==!
+         !                                      !==  External computation of MLE stream function ==!
          CALL inferences( kt , 0, 0, 0, zhu, zhv, dbu, dbv )
-         zpsim_u(:,:) = ext_wbi(:,:) * e2u(:,:)    ! replace external MLE 
-         zpsim_v(:,:) = ext_wbj(:,:) * e1v(:,:)
+         zpsim_u(:,:) = ext_psiu(:,:) * e2u(:,:)    ! replace external stream function with e2u / e1v required for "transport"
+         zpsim_v(:,:) = ext_psiv(:,:) * e1v(:,:)
          !
          IF( nn_conv == 1 ) THEN              ! No MLE in case of convection
             DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
@@ -290,15 +290,8 @@ CONTAINS
             zpsi_uw(ji,jj,jk) = zpsi_uw(ji,jj,jk) * r1_e2u(ji,jj)
             zpsi_vw(ji,jj,jk) = zpsi_vw(ji,jj,jk) * r1_e1v(ji,jj)
          END_3D
-         ! same to have vertical buoyancy flux
-         DO_2D( 0, 0, 0, 0 )
-            zpsim_u(ji,jj) = zpsim_u(ji,jj) * r1_e2u(ji,jj)
-            zpsim_v(ji,jj) = zpsim_v(ji,jj) * r1_e1v(ji,jj)
-         END_2D
          CALL iom_put( "psiu_mle", zpsi_uw )    ! i-mle streamfunction
          CALL iom_put( "psiv_mle", zpsi_vw )    ! j-mle streamfunction
-         CALL iom_put( "int_mlei_wb", zpsim_u )    ! i-mle vertical buoyancy flux
-         CALL iom_put( "int_mlej_wb", zpsim_v )    ! j-mle vertical buoyancy flux
       ENDIF
       !
    END SUBROUTINE tra_mle_trp

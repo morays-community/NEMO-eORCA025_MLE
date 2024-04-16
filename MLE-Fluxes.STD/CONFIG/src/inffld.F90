@@ -23,7 +23,7 @@ MODULE inffld
    !!                    2D Inference Module fields
    !!----------------------------------------------------------------------
    !REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:)  :: tmp_inf_2D          !: dummy field to store 2D inferences
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:)  :: ext_wbi, ext_wbj  !: external-computed MLE streamfunction
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:)  :: ext_psiu, ext_psiv  !: external-computed MLE streamfunction
 
 
    !!----------------------------------------------------------------------
@@ -41,8 +41,7 @@ CONTAINS
       !!---------------------------------------------------------------------
       ierr = 0
       !
-      !ALLOCATE( tmp_inf_2D(jpi,jpj) , tmp_inf_3D(jpi,jpj,jpk)  , STAT=ierr )
-      ALLOCATE( ext_wbi(jpi,jpj) , ext_wbj(jpi,jpj) , STAT=ierr )
+      ALLOCATE( ext_psiu(jpi,jpj) , ext_psiv(jpi,jpj) , STAT=ierr )
       inffld_alloc = ierr
       !
    END FUNCTION
@@ -56,8 +55,7 @@ CONTAINS
       !!---------------------------------------------------------------------
       ierr = 0
       !
-      !DEALLOCATE( tmp_inf_2D , tmp_inf_3D  , STAT=ierr )
-      DEALLOCATE( ext_wbi, ext_wbj , STAT=ierr )
+      DEALLOCATE( ext_psiu, ext_psiv , STAT=ierr )
       inffld_dealloc = ierr
       !
    END FUNCTION

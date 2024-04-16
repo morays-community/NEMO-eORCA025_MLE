@@ -39,8 +39,8 @@ MODULE infmod
    INTEGER, PARAMETER ::   jps_dbv = 6    ! dj[ b ] on v-grid
    INTEGER, PARAMETER ::   jps_inf = 6    ! total number of sendings for inferences
 
-   INTEGER, PARAMETER ::   jpr_wbi = 1   ! i-vertical buoyancy flux on u-grid
-   INTEGER, PARAMETER ::   jpr_wbj = 2   ! j-vertical buoyancy flux on v-grid
+   INTEGER, PARAMETER ::   jpr_psu = 1   ! i-vertical buoyancy flux on u-grid
+   INTEGER, PARAMETER ::   jpr_psv = 2   ! j-vertical buoyancy flux on v-grid
    INTEGER, PARAMETER ::   jpr_inf = 2    ! total number of inference receptions
 
    INTEGER, PARAMETER ::   jpinf = MAX(jps_inf,jpr_inf) ! Maximum number of exchanges
@@ -181,13 +181,13 @@ CONTAINS
          ssnd(ntypinf,jps_e2v)%clgrid = 'V'
 
          ! reception of wb_u and wb_v
-         srcv(ntypinf,jpr_wbi)%clname = 'E_IN_0'
-         srcv(ntypinf,jpr_wbi)%laction = .TRUE.
-         srcv(ntypinf,jpr_wbi)%clgrid = 'U'
+         srcv(ntypinf,jpr_psu)%clname = 'E_IN_0'
+         srcv(ntypinf,jpr_psu)%laction = .TRUE.
+         srcv(ntypinf,jpr_psu)%clgrid = 'U'
 
-         srcv(ntypinf,jpr_wbj)%clname = 'E_IN_1'
-         srcv(ntypinf,jpr_wbj)%laction = .TRUE.
-         srcv(ntypinf,jpr_wbj)%clgrid = 'V'
+         srcv(ntypinf,jpr_psv)%clname = 'E_IN_1'
+         srcv(ntypinf,jpr_psv)%laction = .TRUE.
+         srcv(ntypinf,jpr_psv)%clgrid = 'V'
 
          ! ------------------------------ !
          ! ------------------------------ !
@@ -273,11 +273,11 @@ CONTAINS
       ! ------ Distribute receptions  ------
       !
       ! wb_u and wb_v
-      IF( srcv(ntypinf,jpr_wbi)%laction .AND. srcv(ntypinf,jpr_wbj)%laction ) THEN
-         ext_wbi(:,:) = infrcv(jpr_wbi)%z3(:,:,srcv(ntypinf,jpr_wbi)%nlvl)
-         ext_wbj(:,:) = infrcv(jpr_wbj)%z3(:,:,srcv(ntypinf,jpr_wbj)%nlvl)
-         CALL iom_put( 'ext_mlei_wb', ext_wbi )
-         CALL iom_put( 'ext_mlej_wb', ext_wbj )
+      IF( srcv(ntypinf,jpr_psu)%laction .AND. srcv(ntypinf,jpr_psv)%laction ) THEN
+         ext_psiu(:,:) = infrcv(jpr_psu)%z3(:,:,srcv(ntypinf,jpr_psu)%nlvl)
+         ext_psiv(:,:) = infrcv(jpr_psv)%z3(:,:,srcv(ntypinf,jpr_psv)%nlvl)
+         CALL iom_put( 'ext_psiu_mle', ext_psiu )
+         CALL iom_put( 'ext_psiv_mle', ext_psiv )
       ENDIF
       !
       IF( ln_timing )   CALL timing_stop('inferences')

@@ -19,6 +19,7 @@
            <field field_ref="sst"           name="sosstsst" standard_name="Sea Surface Conservative temperature" />
            <field field_ref="sss"           name="sosaline" standard_name="Sea Surface Absolute salinity" />
 	   <field field_ref="ssh"           name="sossheig"  />
+	   <field field_ref="ext_wb"     name="soext_wb"  />
 	   <field field_ref="mldr10_1"      name="somxl010"  />
 	   <field field_ref="Lf_NHpf"       name="somle_Lf"  />
 
@@ -31,8 +32,7 @@
         <!-- U FILES -->
         <file id="file2" name_suffix="_gridUsurf" description="ocean U grid variables" >
           <field field_ref="ssu"          name="vozocrtx"  />
-          <field field_ref="ext_mlei_wb"  name="soextwbi"  />
-          <field field_ref="int_mlei_wb"  name="sointwbi"  />
+          <field field_ref="ext_psiu_mle" name="soexpsiu"  />
 
            <variable name="start_date"       type="int"><NDATE0>    </variable>
            <variable name="output_frequency" type="string">1d       </variable>
@@ -43,8 +43,7 @@
         <!-- V FILES -->
         <file id="file3" name_suffix="_gridVsurf" description="ocean V grid variables" >
           <field field_ref="ssv"           name="vomecrty" />
-          <field field_ref="ext_mlej_wb"   name="soextwbj"  />
-          <field field_ref="int_mlej_wb"   name="sointwbj"  />
+          <field field_ref="ext_psiv_mle"  name="soexpsiv"  />
 
            <variable name="start_date"       type="int"><NDATE0>    </variable>
            <variable name="output_frequency" type="string">1d       </variable>

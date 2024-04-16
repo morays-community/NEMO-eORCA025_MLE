@@ -101,7 +101,7 @@ CONTAINS
       INTEGER , DIMENSION(A2D(nn_hls))     :: inml_mle
       REAL(wp), DIMENSION(A2D(nn_hls))     :: zpsim_u, zpsim_v, zmld, zbm, zhu, zhv, zn2, zLf_NH, zLf_MH
       REAL(wp), DIMENSION(A2D(nn_hls),jpk) :: zpsi_uw, zpsi_vw
-      REAL(wp), DIMENSION(A2D(nn_hls))     :: dbu, dbv
+      REAL(wp), DIMENSION(A2D(nn_hls))     :: zum, zvm  !: depth averaged velocities, for external model
       !!----------------------------------------------------------------------
       !
       !
@@ -164,11 +164,15 @@ CONTAINS
          zmld(:,:) = 0._wp                      !==   Horizontal shape of the MLE  ==!
          zbm (:,:) = 0._wp
          zn2 (:,:) = 0._wp
+         zum (:,:) = 0._wp ! for external model 
+         zvm (:,:) = 0._wp
          DO_3D( nn_hls, nn_hls, nn_hls, nn_hls, 1, ikmax )                    ! MLD and mean buoyancy and N2 over the mixed layer
             zc = e3t(ji,jj,jk,Kmm) * REAL( MIN( MAX( 0, inml_mle(ji,jj)-jk ) , 1  )  )    ! zc being 0 outside the ML t-points
             zmld(ji,jj) = zmld(ji,jj) + zc
             zbm (ji,jj) = zbm (ji,jj) + zc * (rho0 - rhop(ji,jj,jk) ) * r1_rho0
             zn2 (ji,jj) = zn2 (ji,jj) + zc * (rn2(ji,jj,jk)+rn2(ji,jj,jk+1))*0.5_wp
+            zum(ji,jj) = zum(ji,jj) + uu(ji,jj,jk,Kmm)
+            zvm(ji,jj) = zvm(ji,jj) + vv(ji,jj,jk,Kmm)
          END_3D
    
          SELECT CASE( nn_mld_uv )                         ! MLD at u- & v-pts
@@ -191,6 +195,8 @@ CONTAINS
          !                                                ! convert density into buoyancy
          DO_2D( nn_hls, nn_hls, nn_hls, nn_hls )
             zbm(ji,jj) = + grav * zbm(ji,jj) / MAX( e3t(ji,jj,1,Kmm), zmld(ji,jj) )
+            zum(ji,jj)  = zum(ji,jj) / MAX( e3u(ji,jj,1,Kmm) , zhu(ji,jj) )
+            zvm(ji,jj)  = zvm(ji,jj) / MAX( e3v(ji,jj,1,Kmm) , zhv(ji,jj) ) 
          END_2D
          !
          !
@@ -219,15 +225,14 @@ CONTAINS
                !
                zpsim_v(ji,jj) = rc_f *   zhv(ji,jj)   * zhv(ji,jj)   * e1_e2v(ji,jj)               &
                     &                  * ( zbm(ji,jj+1) - zbm(ji,jj) ) * MIN( 111.e3_wp , e2v(ji,jj) )
-               !
-               dbu(ji,jj) = zbm(ji+1,jj) - zbm(ji,jj)
-               dbv(ji,jj) = zbm(ji,jj+1) - zbm(ji,jj)
             END_2D
          ENDIF
-         !                                      !==  External computation of MLE ==!
-         CALL inferences( kt , 0, 0, 0, zhu, zhv, dbu, dbv )
-         zpsim_u(:,:) = ext_wbi(:,:) * e2u(:,:)    ! replace external MLE 
-         zpsim_v(:,:) = ext_wbj(:,:) * e1v(:,:)
+         !
+         !                     !==  External computation of MLE ==!
+         CALL inferences( kt , 0, 0, 0, zmld, zbm, zum, zvm )
+         zpsim_u(:,:) = ext_psiu(:,:) * e2u(:,:)    ! replace by external values
+         zpsim_v(:,:) = ext_psiv(:,:) * e1v(:,:)
+         !
          !
          IF( nn_conv == 1 ) THEN              ! No MLE in case of convection
             DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
@@ -290,15 +295,8 @@ CONTAINS
             zpsi_uw(ji,jj,jk) = zpsi_uw(ji,jj,jk) * r1_e2u(ji,jj)
             zpsi_vw(ji,jj,jk) = zpsi_vw(ji,jj,jk) * r1_e1v(ji,jj)
          END_3D
-         ! same to have vertical buoyancy flux
-         DO_2D( 0, 0, 0, 0 )
-            zpsim_u(ji,jj) = zpsim_u(ji,jj) * r1_e2u(ji,jj)
-            zpsim_v(ji,jj) = zpsim_v(ji,jj) * r1_e1v(ji,jj)
-         END_2D
          CALL iom_put( "psiu_mle", zpsi_uw )    ! i-mle streamfunction
          CALL iom_put( "psiv_mle", zpsi_vw )    ! j-mle streamfunction
-         CALL iom_put( "int_mlei_wb", zpsim_u )    ! i-mle vertical buoyancy flux
-         CALL iom_put( "int_mlej_wb", zpsim_v )    ! j-mle vertical buoyancy flux
       ENDIF
       !
    END SUBROUTINE tra_mle_trp

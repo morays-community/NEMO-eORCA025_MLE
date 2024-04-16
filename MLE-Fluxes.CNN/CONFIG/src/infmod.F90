@@ -15,6 +15,7 @@ MODULE infmod
    !!----------------------------------------------------------------------
    USE oce             ! ocean fields
    USE dom_oce         ! ocean domain fields
+   USE sbc_oce         ! ocean surface fields
    USE inffld          ! working fields for inferences models
    USE cpl_oasis3      ! OASIS3 coupling
    USE timing
@@ -31,17 +32,19 @@ MODULE infmod
    PUBLIC inferences         ! routine called in tramle.F90
    PUBLIC inferences_final   ! routine called in nemogcm.F90
 
-   INTEGER, PARAMETER ::   jps_e1u = 1    ! di[ x ] on u-grid
-   INTEGER, PARAMETER ::   jps_e2v = 2    ! dj[ y ] on v-grid
-   INTEGER, PARAMETER ::   jps_hu = 3     ! mixed-layer-depth on u-grid
-   INTEGER, PARAMETER ::   jps_hv = 4     ! mixed-layer-depth on v-grid
-   INTEGER, PARAMETER ::   jps_dbu = 5    ! di[ b ] on u-grid
-   INTEGER, PARAMETER ::   jps_dbv = 6    ! dj[ b ] on v-grid
-   INTEGER, PARAMETER ::   jps_inf = 6    ! total number of sendings for inferences
+   INTEGER, PARAMETER ::   jps_gradb = 1   ! depth-averaged buoyancy gradient magnitude on t-grid
+   INTEGER, PARAMETER ::   jps_fcor = 2    ! Coriolis parameter
+   INTEGER, PARAMETER ::   jps_hml = 3     ! mixed-layer-depth on t-grid
+   INTEGER, PARAMETER ::   jps_tau = 4     ! surface wind stress magnitude on t-grid
+   INTEGER, PARAMETER ::   jps_q = 5       ! surface heat flux
+   INTEGER, PARAMETER ::   jps_div = 6     ! depth-averaged horizontal divergence
+   INTEGER, PARAMETER ::   jps_vort = 7    ! depth-averaged vertical vorticity
+   INTEGER, PARAMETER ::   jps_strain = 8  ! depth-averaged strain magnitude
+   INTEGER, PARAMETER ::   jps_tmask = 9   ! t-grid mask
+   INTEGER, PARAMETER ::   jps_inf = 9  ! total number of sendings
 
-   INTEGER, PARAMETER ::   jpr_wbi = 1   ! i-vertical buoyancy flux on u-grid
-   INTEGER, PARAMETER ::   jpr_wbj = 2   ! j-vertical buoyancy flux on v-grid
-   INTEGER, PARAMETER ::   jpr_inf = 2    ! total number of inference receptions
+   INTEGER, PARAMETER ::   jpr_wb  = 1    ! depth-averaged subgrid vertical buoyancy flux on t-grid
+   INTEGER, PARAMETER ::   jpr_inf = 1    ! total number of receptions
 
    INTEGER, PARAMETER ::   jpinf = MAX(jps_inf,jpr_inf) ! Maximum number of exchanges
 
@@ -59,7 +62,10 @@ MODULE infmod
    LOGICAL , PUBLIC ::   ln_inf    !: activate module for inference models
    
    !!-------------------------------------------------------------------------
-
+   !! * Substitutions
+#  include "do_loop_substitute.h90"
+#  include "domzgr_substitute.h90"
+   !!-------------------------------------------------------------------------
 CONTAINS
 
    INTEGER FUNCTION inf_alloc()
@@ -153,41 +159,37 @@ CONTAINS
          ! -------------------------------- !
          !          MLE-Fluxes-CNN          !
          ! -------------------------------- !
-         ! sending Hu and Hv
-         ssnd(ntypinf,jps_hu)%clname = 'E_OUT_0'
-         ssnd(ntypinf,jps_hu)%laction = .TRUE.
-         ssnd(ntypinf,jps_hu)%clgrid = 'U'
+         ! sending gradb, FCOR, HML, TAU, Q, div, vort, strain
+         ssnd(ntypinf,jps_gradb)%clname = 'E_OUT_0'
+         ssnd(ntypinf,jps_gradb)%laction = .TRUE.
 
-         ssnd(ntypinf,jps_hv)%clname = 'E_OUT_1'
-         ssnd(ntypinf,jps_hv)%laction = .TRUE.
-         ssnd(ntypinf,jps_hv)%clgrid = 'V'
+         ssnd(ntypinf,jps_fcor)%clname = 'E_OUT_1'
+         ssnd(ntypinf,jps_fcor)%laction = .TRUE.
 
-         ! sending Delta_i_b and Delta_j_b
-         ssnd(ntypinf,jps_dbu)%clname = 'E_OUT_2'
-         ssnd(ntypinf,jps_dbu)%laction = .TRUE.
-         ssnd(ntypinf,jps_dbu)%clgrid = 'U'
+         ssnd(ntypinf,jps_hml)%clname = 'E_OUT_2'
+         ssnd(ntypinf,jps_hml)%laction = .TRUE.
 
-         ssnd(ntypinf,jps_dbv)%clname = 'E_OUT_3'
-         ssnd(ntypinf,jps_dbv)%laction = .TRUE.
-         ssnd(ntypinf,jps_dbv)%clgrid = 'V'
+         ssnd(ntypinf,jps_tau)%clname = 'E_OUT_3'
+         ssnd(ntypinf,jps_tau)%laction = .TRUE.
 
-         ! sending e1u and e2v
-         ssnd(ntypinf,jps_e1u)%clname = 'E_OUT_4'
-         ssnd(ntypinf,jps_e1u)%laction = .TRUE.
-         ssnd(ntypinf,jps_e1u)%clgrid = 'U'
+         ssnd(ntypinf,jps_q)%clname = 'E_OUT_4'
+         ssnd(ntypinf,jps_q)%laction = .TRUE.
 
-         ssnd(ntypinf,jps_e2v)%clname = 'E_OUT_5'
-         ssnd(ntypinf,jps_e2v)%laction = .TRUE.
-         ssnd(ntypinf,jps_e2v)%clgrid = 'V'
+         ssnd(ntypinf,jps_div)%clname = 'E_OUT_5'
+         ssnd(ntypinf,jps_div)%laction = .TRUE.
 
-         ! reception of wb_u and wb_v
-         srcv(ntypinf,jpr_wbi)%clname = 'E_IN_0'
-         srcv(ntypinf,jpr_wbi)%laction = .TRUE.
-         srcv(ntypinf,jpr_wbi)%clgrid = 'U'
+         ssnd(ntypinf,jps_vort)%clname = 'E_OUT_6'
+         ssnd(ntypinf,jps_vort)%laction = .TRUE.
 
-         srcv(ntypinf,jpr_wbj)%clname = 'E_IN_1'
-         srcv(ntypinf,jpr_wbj)%laction = .TRUE.
-         srcv(ntypinf,jpr_wbj)%clgrid = 'V'
+         ssnd(ntypinf,jps_strain)%clname = 'E_OUT_7'
+         ssnd(ntypinf,jps_strain)%laction = .TRUE.
+
+         ssnd(ntypinf,jps_tmask)%clname = 'E_OUT_8'
+         ssnd(ntypinf,jps_tmask)%laction = .TRUE.
+
+         ! reception of vertical buoyancy fluxes     
+         srcv(ntypinf,jpr_wb)%clname = 'E_IN_0'
+         srcv(ntypinf,jpr_wb)%laction = .TRUE.
 
          ! ------------------------------ !
          ! ------------------------------ !
@@ -205,7 +207,7 @@ CONTAINS
    END SUBROUTINE inferences_init
 
 
-   SUBROUTINE inferences( kt, Kbb, Kmm, Kaa, Hu, Hv, dbu, dbv )
+   SUBROUTINE inferences( kt, Kbb, Kmm, Kaa, hmld, bz, uz, vz )
       !!----------------------------------------------------------------------
       !!             ***  ROUTINE inferences  ***
       !!
@@ -216,11 +218,11 @@ CONTAINS
       !!----------------------------------------------------------------------
       INTEGER, INTENT(in) ::   kt            ! ocean time step
       INTEGER, INTENT(in) ::   Kbb, Kmm, Kaa ! ocean time level indices
-      REAL(wp), DIMENSION(jpi,jpj), INTENT(in) ::  Hu, Hv, dbu, dbv    ! sending buffer
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(in) ::  hmld, bz, uz, vz
       !
       !
-      INTEGER :: isec, info, jn                       ! local integer
-      REAL(wp), DIMENSION(jpi,jpj,jpk)   ::  zdata    ! sending buffer
+      INTEGER :: isec, info, jn                          ! local integer
+      REAL(wp), DIMENSION(jpi,jpj)   ::  zdat, zdatx, zdaty   ! working buffer
       !!----------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('inferences')
@@ -230,23 +232,28 @@ CONTAINS
       !
       ! ------  Prepare data to send ------
       !
-      ! Hu and Hv
-      IF( ssnd(ntypinf,jps_hu)%laction .AND. ssnd(ntypinf,jps_hv)%laction ) THEN
-         infsnd(jps_hu)%z3(:,:,ssnd(ntypinf,jps_hu)%nlvl) = Hu(:,:)
-         infsnd(jps_hv)%z3(:,:,ssnd(ntypinf,jps_hv)%nlvl) = Hv(:,:)
-      ENDIF  
-      !
-      ! Delta_i_b and Delta_j_b
-      IF( ssnd(ntypinf,jps_dbu)%laction .AND. ssnd(ntypinf,jps_dbv)%laction ) THEN
-         infsnd(jps_dbu)%z3(:,:,ssnd(ntypinf,jps_dbu)%nlvl) = dbu(:,:)
-         infsnd(jps_dbv)%z3(:,:,ssnd(ntypinf,jps_dbv)%nlvl) = dbv(:,:)
-      ENDIF
-      !
-      ! e1u and e2v
-      IF( ssnd(ntypinf,jps_e1u)%laction .AND. ssnd(ntypinf,jps_e2v)%laction ) THEN
-          infsnd(jps_e1u)%z3(:,:,ssnd(ntypinf,jps_e1u)%nlvl) = e1u(:,:)
-          infsnd(jps_e2v)%z3(:,:,ssnd(ntypinf,jps_e2v)%nlvl) = e2v(:,:)
-      ENDIF
+      ! gradB
+      CALL calc_2D_scal_gradient( bz, zdatx, zdaty )
+      infsnd(jps_gradb)%z3(:,:,ssnd(ntypinf,jps_gradb)%nlvl) = SQRT( zdatx(:,:)**2 + zdaty(:,:)**2 )
+      ! FCOR
+      infsnd(jps_fcor)%z3(:,:,ssnd(ntypinf,jps_fcor)%nlvl) = ff_t(:,:)
+      ! HML
+      infsnd(jps_hml)%z3(:,:,ssnd(ntypinf,jps_hml)%nlvl) = hmld(:,:)
+      ! Tau
+      infsnd(jps_tau)%z3(:,:,ssnd(ntypinf,jps_tau)%nlvl) = taum(:,:)
+      ! Heat Flux
+      infsnd(jps_q)%z3(:,:,ssnd(ntypinf,jps_q)%nlvl) = qsr(:,:) + qns(:,:) 
+      ! horizontal divergence
+      CALL calc_2D_vec_hdiv( hmld, uz, vz, zdat )
+      infsnd(jps_div)%z3(:,:,ssnd(ntypinf,jps_div)%nlvl) = zdat(:,:) 
+      ! vorticity
+      CALL calc_2D_vec_vort( uz, vz, zdat )
+      infsnd(jps_vort)%z3(:,:,ssnd(ntypinf,jps_vort)%nlvl) = zdat(:,:)
+      ! strain
+      CALL calc_2D_strain_magnitude( uz, vz, zdat )
+      infsnd(jps_strain)%z3(:,:,ssnd(ntypinf,jps_strain)%nlvl) = zdat(:,:)
+      ! tmask
+      infsnd(jps_tmask)%z3(:,:,1:ssnd(ntypinf,jps_tmask)%nlvl) = tmask(:,:,1:ssnd(ntypinf,jps_tmask)%nlvl) 
       !
       ! ========================
       !   Proceed all sendings
@@ -272,17 +279,181 @@ CONTAINS
       !
       ! ------ Distribute receptions  ------
       !
-      ! wb_u and wb_v
-      IF( srcv(ntypinf,jpr_wbi)%laction .AND. srcv(ntypinf,jpr_wbj)%laction ) THEN
-         ext_wbi(:,:) = infrcv(jpr_wbi)%z3(:,:,srcv(ntypinf,jpr_wbi)%nlvl)
-         ext_wbj(:,:) = infrcv(jpr_wbj)%z3(:,:,srcv(ntypinf,jpr_wbj)%nlvl)
-         CALL iom_put( 'ext_mlei_wb', ext_wbi )
-         CALL iom_put( 'ext_mlej_wb', ext_wbj )
-      ENDIF
+      ! wb
+      ext_wb(:,:) = infrcv(jpr_wb)%z3(:,:,srcv(ntypinf,jpr_wb)%nlvl)
+      !
+      ! get streamfunction on correct grid points
+      CALL invert_buoyancy_flux( ext_wb, zdatx, zdaty, ext_psiu, ext_psiv )  
+      !
+      ! output results
+      CALL iom_put( 'ext_wb', ext_wb )
+      CALL iom_put( 'ext_psiu_mle', ext_psiu )
+      CALL iom_put( 'ext_psiv_mle', ext_psiv )
       !
       IF( ln_timing )   CALL timing_stop('inferences')
       !
    END SUBROUTINE inferences
+
+
+   SUBROUTINE invert_buoyancy_flux( wb, gradbx, gradby, psiu, psiv )
+      !!----------------------------------------------------------------------
+      !!             ***  ROUTINE invert_buoyancy_flux  ***
+      !!
+      !! ** Purpose :   Compute streamfunction on u- and v- points 
+      !!                from vertical buoyancy flux and buoyancy gradient
+      !!
+      !! ** Method  :   * Invert w'b' = psi x grad_b
+      !!----------------------------------------------------------------------
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(in) ::  wb, gradbx, gradby  ! vert. buoyncy flux and buoyancy gradient
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(out) :: psiu, psiv  ! computed streamfunction
+      !
+      INTEGER  ::   ji, jj          ! dummy loop indices
+      REAL(wp), DIMENSION(jpi,jpj) :: ztmpu, ztmpv  ! buffers
+      !!----------------------------------------------------------------------
+      !
+      ! invert buoyancy fluxes
+      ztmpu(:,:) = wb(:,:) * gradbx(:,:) / ( gradbx(:,:)**2 + gradby(:,:)**2 )
+      ztmpv(:,:) = wb(:,:) * gradby(:,:) / ( gradbx(:,:)**2 + gradby(:,:)**2 )
+
+      ! u- and v- points
+      DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
+         psiu(ji,jj) = ( ztmpu(ji+1,jj) + ztmpu(ji,jj) ) * 0.5 * umask(ji,jj,1)
+         psiv(ji,jj) = ( ztmpv(ji,jj+1) + ztmpv(ji,jj) ) * 0.5 * vmask(ji,jj,1)
+      END_2D
+      !
+   END SUBROUTINE invert_buoyancy_flux
+
+
+   SUBROUTINE calc_2D_scal_gradient( scalar, gradx, grady )
+      !!----------------------------------------------------------------------
+      !!             ***  ROUTINE calc_2D_scal_gradient  ***
+      !!
+      !! ** Purpose :   Compute gradient of a 2D scalar field on T-grid
+      !!
+      !! ** Method  :   * Finite differences
+      !!----------------------------------------------------------------------
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(in) ::  scalar        ! input scalar
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(out) :: gradx, grady  ! computed gradient
+      !
+      INTEGER  ::   ji, jj          ! dummy loop indices
+      INTEGER  :: jwgt              ! local storage integer
+      !!----------------------------------------------------------------------
+      !
+      DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
+         ! grad in i-longitude
+         gradx(ji,jj) = ( scalar(ji+1,jj) - scalar(ji,jj) ) / e1u(ji,jj) * umask(ji,jj,1)
+         gradx(ji,jj) = gradx(ji,jj) + ( scalar(ji,jj) - scalar(ji-1,jj) ) / e1u(ji-1,jj) * umask(ji-1,jj,1)
+         jwgt = umask(ji,jj,1) + umask(ji-1,jj,1)
+         IF ( jwgt == 0 ) jwgt = 1
+         gradx(ji,jj) = gradx(ji,jj) / REAL(jwgt,wp)
+        
+         ! grad in j-latitude
+         grady(ji,jj) = ( scalar(ji,jj+1) - scalar(ji,jj) ) / e2v(ji,jj) * vmask(ji,jj,1)
+         grady(ji,jj) = grady(ji,jj) + ( scalar(ji,jj) - scalar(ji,jj-1) ) / e2v(ji,jj-1) * vmask(ji,jj-1,1)
+         jwgt = vmask(ji,jj,1) + vmask(ji-1,jj,1)
+         IF ( jwgt == 0 ) jwgt = 1
+         grady(ji,jj) = grady(ji,jj) / REAL(jwgt,wp)
+      END_2D
+      !
+   END SUBROUTINE calc_2D_scal_gradient
+
+
+   SUBROUTINE calc_2D_vec_hdiv( hgt, u, v, hdiv )
+      !!----------------------------------------------------------------------
+      !!             ***  ROUTINE calc_2D_vec_hdiv  ***
+      !!
+      !! ** Purpose :   Compute horizontal divergence of a 2D velocity field on T-grid
+      !!
+      !! ** Method  :   * Finite differences
+      !!----------------------------------------------------------------------
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(in) ::  u, v   ! input velocities
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(in) ::  hgt     ! thickness of 2D field
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(out) :: hdiv   ! computed divergence
+      !
+      INTEGER  ::   ji, jj       ! dummy loop indices
+      REAL(wp)  :: ztmp1, ztmp2  ! interpolated hgt in u- and v- points
+      !!----------------------------------------------------------------------
+      !
+      DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
+         ! i-longitude
+         ztmp1 = MIN( hgt(ji+1,jj) , hgt(ji,jj) )
+         ztmp2 = MIN( hgt(ji,jj) , hgt(ji-1,jj) )
+         hdiv(ji,jj) = u(ji,jj) * e2u(ji,jj) * ztmp1 - u(ji-1,jj) * e2u(ji-1,jj) * ztmp2
+         
+         ! j-latitude
+         ztmp1 = MIN( hgt(ji,jj+1) , hgt(ji,jj) )
+         ztmp2 = MIN( hgt(ji,jj) , hgt(ji,jj-1) )
+         hdiv(ji,jj) = hdiv(ji,jj) + ( v(ji,jj) * e1v(ji,jj) * ztmp1 - v(ji,jj-1) * e1v(ji,jj-1) * ztmp2 )
+
+         hdiv(ji,jj) = hdiv(ji,jj)  / ( e1e2t(ji,jj)*hgt(ji,jj) )
+      END_2D
+      !
+   END SUBROUTINE calc_2D_vec_hdiv
+
+
+   SUBROUTINE calc_2D_vec_vort( u, v, vort )
+      !!----------------------------------------------------------------------
+      !!             ***  ROUTINE calc_2D_vec_vort  ***
+      !!
+      !! ** Purpose :   Compute vertical vorticity of a 2D velocity field on T-grid
+      !!
+      !! ** Method  :   * Finite differences
+      !!----------------------------------------------------------------------
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(in) ::  u, v   ! input velocities
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(out) :: vort     ! computed vorticiy
+      !
+      INTEGER  ::   ji, jj          ! dummy loop indices
+      REAL(wp), DIMENSION(jpi,jpj) :: zbuf ! working buffer
+      !!----------------------------------------------------------------------
+      !
+      DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
+         zbuf(ji,jj) = e2v(ji+1,jj) * v(ji+1,jj) - e2v(ji,jj) * v(ji,jj)
+         zbuf(ji,jj) = zbuf(ji,jj) - ( e1u(ji,jj+1) * u(ji,jj+1) + e1u(ji,jj) * v(ji,jj) )
+         zbuf(ji,jj) = zbuf(ji,jj) * r1_e1e2f(ji,jj) * fmask(ji,jj,1)
+      END_2D
+      ! set on t-grid
+      DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
+         vort(ji,jj) = 0.25_wp * ( zbuf(ji-1,jj) + zbuf(ji,jj) + zbuf(ji-1,jj-1) + zbuf(ji,jj-1) )
+      END_2D
+      !
+   END SUBROUTINE calc_2D_vec_vort
+
+
+   SUBROUTINE calc_2D_strain_magnitude( u, v, strain )
+      !!----------------------------------------------------------------------
+      !!             ***  ROUTINE calc_2D_strain_magnitude  ***
+      !!
+      !! ** Purpose :   Compute strain magnitude of a 2D velocity field on T-grid
+      !!
+      !! ** Method  :   * Finite differences
+      !!----------------------------------------------------------------------
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(in) ::  u, v   ! input velocities
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(out) :: strain ! computed strain
+      !
+      INTEGER  ::   ji, jj          ! dummy loop indices
+      REAL(wp)  :: ztmp             ! local real
+      REAL(wp), DIMENSION(jpi,jpj) :: ztrac, zshear ! working arrays
+      !!----------------------------------------------------------------------
+      !
+      DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
+         ! expansion rate
+         ztmp =   ( u(ji,jj)*r1_e2u(ji,jj) - u(ji-1,jj)*r1_e2u(ji-1,jj) ) * r1_e1t(ji,jj) * e2t(ji,jj) &
+              & - ( v(ji,jj)*r1_e1v(ji,jj) - v(ji,jj-1)*r1_e1v(ji,jj-1) ) * r1_e2t(ji,jj) * e1t(ji,jj)  
+         ztrac(ji,jj) = ztmp**2 * tmask(ji,jj,1)
+
+         ! shear rate 
+         ztmp =   ( u(ji,jj+1)*r1_e1u(ji,jj+1) - u(ji,jj)*r1_e1u(ji,jj) ) * r1_e2f(ji,jj) * e1f(ji,jj) &
+              & + ( v(ji+1,jj)*r1_e2v(ji+1,jj) - v(ji,jj)*r1_e2v(ji,jj) ) * r1_e1f(ji,jj) * e2f(ji,jj) 
+         zshear(ji,jj) = ztmp**2 * fmask(ji,jj,1)
+      END_2D
+      !
+      ! t-grid
+      DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
+         strain(ji,jj) = 0.25_wp * ( zshear(ji-1,jj) + zshear(ji,jj) + zshear(ji-1,jj-1) + zshear(ji,jj-1) )
+         strain(ji,jj) = SQRT( strain(ji,jj) + ztrac(ji,jj) ) 
+      END_2D
+      !
+   END SUBROUTINE calc_2D_strain_magnitude
 
 
    SUBROUTINE inferences_final

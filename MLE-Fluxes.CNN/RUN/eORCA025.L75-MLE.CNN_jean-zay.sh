@@ -5,7 +5,7 @@
 #SBATCH -o nemo_jean-zay.o%j
 #SBATCH -A cli@cpu
 #SBATCH --hint=nomultithread
-#SBATCH --time=08:00:00
+#SBATCH --time=10:00:00
 #SBATCH --exclusive
 
 # Python environment -- complete/modify/comment as you wish
@@ -13,6 +13,7 @@
 source $P_PYOASIS_DIR/python/init.sh
 source $P_PYOASIS_DIR/python/init.csh
 source ${HOME}/.bash_profile
+module load
 conda activate morays
 # ----------- 
 
@@ -21,7 +22,7 @@ ulimit -s
 ulimit -s unlimited
 
 CONFIG=eORCA025.L75
-CASE=GADLB
+CASE=MLE.CNN
 
 CONFCASE=${CONFIG}-${CASE}
 CTL_DIR=$PDIR/RUN_${CONFIG}/${CONFCASE}/CTL

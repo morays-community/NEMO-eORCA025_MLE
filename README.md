@@ -22,7 +22,7 @@ Internal and external computed fluxes are written in an output file with the NEM
 
 ### Python
 
-- Eophis version : [v0.9.0-beta](https://github.com/alexis-barge/eophis/tree/v0.9.0-beta)
+- Eophis version : [v0.9.1](https://github.com/meom-group/eophis/releases/tag/v0.9.1)
 
 
 ### Run
