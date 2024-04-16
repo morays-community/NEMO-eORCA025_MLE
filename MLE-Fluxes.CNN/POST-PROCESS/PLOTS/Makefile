@@ -2,11 +2,9 @@
 # -------------------
 # Commands used to make the plots in ./RES
 #
-default: means
+default: snapshots
 
-means: means_1d
-
-means_1d:
-	python3 ./plot_means.py -f 1d -y 1971
+snapshots:
+	python3 ./plot_snpsht.py -f 1d -y 1966 -m 01 -d 07
 
 
