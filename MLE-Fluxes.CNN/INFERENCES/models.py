@@ -89,7 +89,7 @@ def vert_buoyancy_flux_CNN(*inputs, tmask):
             mean = norms['means'][name]
             dev = norms['devs'][name]
             edged_arr = ( arr - mean ) / dev * tmask
-            edged_arr = make_edges( arr , edge_size )
+            edged_arr = make_edges( edged_arr , edge_size )
             to_stack.append( edged_arr[:,:,0] )
 
         # build batch
