@@ -10,6 +10,16 @@ Internal and external computed fluxes are written in an output file with the NEM
 - **STD** : External standard computation, as described in [Calvert et al. (2020)](https://doi.org/10.1016/j.ocemod.2020.101678) with retroaction on the solution
 - **CNN** : Fluxes computed from pre-trained [Bodner, Balwada and Zanna (2024)]() CNN `...WORK IN PROGRESS...`
 
+In reality, four experiments are realized :
+- `eORCA025.L75` : no MLE parameterisation is used to compare the effects of the different parameterisations on the mixed layer depth
+- `eORCA05.L75-MLE.STD-NEMO` : Computation of [Calvert et al. (2020)](https://doi.org/10.1016/j.ocemod.2020.101678) with the already existing NEMO implementation
+- `eORCA05.L75-MLE.STD-Python` : corresponds to **STD** variation
+- `eORCA05.L75-MLE.CNN` : corresponds to **CNN** variation
+
+All experiments are summarized on this figure:
+
+<img width="695" alt="MLE_EXP" src="https://github.com/morays-community/NEMO-MLE_Fluxes/assets/138531178/084171b2-7f5d-407b-ad6c-92551f3bbcb2">
+
 ## Experiments Requirements
 
 
