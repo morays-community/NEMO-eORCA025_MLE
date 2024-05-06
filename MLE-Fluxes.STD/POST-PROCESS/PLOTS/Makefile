@@ -2,7 +2,7 @@
 # -------------------
 # Commands used to make the plots in ./RES
 #
-default: means snapshots
+default: means snapshots diffmle
 
 means: means_1d means_5d
 
@@ -15,4 +15,6 @@ means_5d:
 snapshots:
 	python3 ./plot_snpsht.py -f 1d -y 1967 -m 8 -d 2
 
-
+diffmle:
+	python3 ./diff_mle.py -cref eORCA025.L75-REF -f 1d -y 1967 -m 3
+	python3 ./diff_mle.py -cref eORCA025.L75-REF -f 1d -y 1967 -m 8
