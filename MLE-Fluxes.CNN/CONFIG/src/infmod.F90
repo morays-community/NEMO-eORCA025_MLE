@@ -22,6 +22,7 @@ MODULE infmod
    USE iom
    USE in_out_manager
    USE lib_mpp
+   USE lbclnk
 
    IMPLICIT NONE
    PRIVATE
@@ -32,15 +33,15 @@ MODULE infmod
    PUBLIC inferences         ! routine called in tramle.F90
    PUBLIC inferences_final   ! routine called in nemogcm.F90
 
-   INTEGER, PARAMETER ::   jps_gradb = 1   ! depth-averaged buoyancy gradient magnitude on t-grid
-   INTEGER, PARAMETER ::   jps_fcor = 2    ! Coriolis parameter
-   INTEGER, PARAMETER ::   jps_hml = 3     ! mixed-layer-depth on t-grid
-   INTEGER, PARAMETER ::   jps_tau = 4     ! surface wind stress magnitude on t-grid
-   INTEGER, PARAMETER ::   jps_q = 5       ! surface heat flux
-   INTEGER, PARAMETER ::   jps_div = 6     ! depth-averaged horizontal divergence
-   INTEGER, PARAMETER ::   jps_vort = 7    ! depth-averaged vertical vorticity
-   INTEGER, PARAMETER ::   jps_strain = 8  ! depth-averaged strain magnitude
-   INTEGER, PARAMETER ::   jps_tmask = 9   ! t-grid mask
+   INTEGER, PARAMETER ::   jps_tmask = 1   ! t-grid mask
+   INTEGER, PARAMETER ::   jps_gradb = 2   ! depth-averaged buoyancy gradient magnitude on t-grid
+   INTEGER, PARAMETER ::   jps_fcor = 3    ! Coriolis parameter
+   INTEGER, PARAMETER ::   jps_hml = 4     ! mixed-layer-depth on t-grid
+   INTEGER, PARAMETER ::   jps_tau = 5     ! surface wind stress magnitude on t-grid
+   INTEGER, PARAMETER ::   jps_q = 6       ! surface heat flux
+   INTEGER, PARAMETER ::   jps_div = 7     ! depth-averaged horizontal divergence
+   INTEGER, PARAMETER ::   jps_vort = 8    ! depth-averaged vertical vorticity
+   INTEGER, PARAMETER ::   jps_strain = 9  ! depth-averaged strain magnitude
    INTEGER, PARAMETER ::   jps_inf = 9  ! total number of sendings
 
    INTEGER, PARAMETER ::   jpr_wb  = 1    ! depth-averaged subgrid vertical buoyancy flux on t-grid
@@ -55,7 +56,7 @@ MODULE infmod
    !!                    Namelist for the Inference Models
    !!-------------------------------------------------------------------------
    !                           !!** naminf namelist **
-   !TYPE ::   FLD_INF              !: Field informations ...  
+   !TYPE ::   FLD_IN              !: Field informations ...  
    !   CHARACTER(len = 32) ::         ! 
    !END TYPE FLD_INF
    !
@@ -304,21 +305,35 @@ CONTAINS
       !!
       !! ** Method  :   * Invert w'b' = psi x grad_b
       !!----------------------------------------------------------------------
-      REAL(wp), DIMENSION(jpi,jpj), INTENT(in) ::  wb, gradbx, gradby  ! vert. buoyncy flux and buoyancy gradient
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(inout) ::  wb, gradbx, gradby  ! vert. buoyncy flux and buoyancy gradient
       REAL(wp), DIMENSION(jpi,jpj), INTENT(out) :: psiu, psiv  ! computed streamfunction
       !
       INTEGER  ::   ji, jj          ! dummy loop indices
+      INTEGER  :: jwgt              ! local storage integer
+      REAL(wp) :: amp
       REAL(wp), DIMENSION(jpi,jpj) :: ztmpu, ztmpv  ! buffers
       !!----------------------------------------------------------------------
       !
       ! invert buoyancy fluxes
-      ztmpu(:,:) = wb(:,:) * gradbx(:,:) / ( gradbx(:,:)**2 + gradby(:,:)**2 )
-      ztmpv(:,:) = wb(:,:) * gradby(:,:) / ( gradbx(:,:)**2 + gradby(:,:)**2 )
-
-      ! u- and v- points
+      CALL lbc_lnk( 'infmod', gradbx, 'T', 1.0_wp , gradby, 'T', 1.0_wp )
+      DO_2D( nn_hls, nn_hls, nn_hls, nn_hls )
+         amp = gradbx(ji,jj)**2 + gradby(ji,jj)**2
+         IF ( amp == 0.0_wp ) amp = 1.0_wp
+         ztmpu(ji,jj) = wb(ji,jj) * gradbx(ji,jj) / amp * tmask(ji,jj,1)
+         ztmpv(ji,jj) = wb(ji,jj) * gradby(ji,jj) / amp * tmask(ji,jj,1)
+      END_2D
+      !
+      ! interpolate to velocity points
       DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
-         psiu(ji,jj) = ( ztmpu(ji+1,jj) + ztmpu(ji,jj) ) * 0.5 * umask(ji,jj,1)
-         psiv(ji,jj) = ( ztmpv(ji,jj+1) + ztmpv(ji,jj) ) * 0.5 * vmask(ji,jj,1)
+         ! u-grid
+         jwgt = tmask(ji+1,jj,1) + tmask(ji,jj,1)
+         IF ( jwgt == 0 ) jwgt = 1
+         psiu(ji,jj) = ( ztmpu(ji+1,jj) + ztmpu(ji,jj) ) / REAL(jwgt,wp)
+
+         ! v-grid
+         jwgt = tmask(ji,jj+1,1) + tmask(ji,jj,1)
+         IF ( jwgt == 0 ) jwgt = 1
+         psiv(ji,jj) = ( ztmpv(ji,jj+1) + ztmpv(ji,jj) ) / REAL(jwgt,wp)
       END_2D
       !
    END SUBROUTINE invert_buoyancy_flux
@@ -374,7 +389,7 @@ CONTAINS
       REAL(wp)  :: ztmp1, ztmp2  ! interpolated hgt in u- and v- points
       !!----------------------------------------------------------------------
       !
-      DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
+      DO_2D( nn_hls-1, nn_hls, nn_hls-1, nn_hls )
          ! i-longitude
          ztmp1 = MIN( hgt(ji+1,jj) , hgt(ji,jj) )
          ztmp2 = MIN( hgt(ji,jj) , hgt(ji-1,jj) )
@@ -408,11 +423,12 @@ CONTAINS
       !
       DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
          zbuf(ji,jj) = e2v(ji+1,jj) * v(ji+1,jj) - e2v(ji,jj) * v(ji,jj)
-         zbuf(ji,jj) = zbuf(ji,jj) - ( e1u(ji,jj+1) * u(ji,jj+1) + e1u(ji,jj) * v(ji,jj) )
+         zbuf(ji,jj) = zbuf(ji,jj) - e1u(ji,jj+1) * u(ji,jj+1) + e1u(ji,jj) * u(ji,jj)
          zbuf(ji,jj) = zbuf(ji,jj) * r1_e1e2f(ji,jj) * fmask(ji,jj,1)
       END_2D
+      !
       ! set on t-grid
-      DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
+      DO_2D( nn_hls-1, nn_hls-1, nn_hls-1, nn_hls-1 )
          vort(ji,jj) = 0.25_wp * ( zbuf(ji-1,jj) + zbuf(ji,jj) + zbuf(ji-1,jj-1) + zbuf(ji,jj-1) )
       END_2D
       !
@@ -448,7 +464,7 @@ CONTAINS
       END_2D
       !
       ! t-grid
-      DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
+      DO_2D( nn_hls-1, nn_hls-1, nn_hls-1, nn_hls-1 )
          strain(ji,jj) = 0.25_wp * ( zshear(ji-1,jj) + zshear(ji,jj) + zshear(ji-1,jj-1) + zshear(ji,jj-1) )
          strain(ji,jj) = SQRT( strain(ji,jj) + ztrac(ji,jj) ) 
       END_2D

@@ -171,8 +171,8 @@ CONTAINS
             zmld(ji,jj) = zmld(ji,jj) + zc
             zbm (ji,jj) = zbm (ji,jj) + zc * (rho0 - rhop(ji,jj,jk) ) * r1_rho0
             zn2 (ji,jj) = zn2 (ji,jj) + zc * (rn2(ji,jj,jk)+rn2(ji,jj,jk+1))*0.5_wp
-            zum(ji,jj) = zum(ji,jj) + uu(ji,jj,jk,Kmm)
-            zvm(ji,jj) = zvm(ji,jj) + vv(ji,jj,jk,Kmm)
+            zum(ji,jj) = zum(ji,jj) + zc * uu(ji,jj,jk,Kmm)
+            zvm(ji,jj) = zvm(ji,jj) + zc * vv(ji,jj,jk,Kmm)
          END_3D
    
          SELECT CASE( nn_mld_uv )                         ! MLD at u- & v-pts
@@ -229,9 +229,10 @@ CONTAINS
          ENDIF
          !
          !                     !==  External computation of MLE ==!
+         CALL lbc_lnk( 'tramle', zum, 'U', 1.0_wp , zvm, 'V', 1.0_wp )
          CALL inferences( kt , 0, 0, 0, zmld, zbm, zum, zvm )
-         zpsim_u(:,:) = ext_psiu(:,:) * e2u(:,:)    ! replace by external values
-         zpsim_v(:,:) = ext_psiv(:,:) * e1v(:,:)
+         !zpsim_u(:,:) = ext_psiu(:,:) * e2u(:,:)    ! replace by external values
+         !zpsim_v(:,:) = ext_psiv(:,:) * e1v(:,:)
          !
          !
          IF( nn_conv == 1 ) THEN              ! No MLE in case of convection
