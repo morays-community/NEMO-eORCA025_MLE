@@ -71,6 +71,7 @@ def make_edges( array , edge ):
 
 #       Main Model Routines
 # ------------------------------
+@torch.no_grad()
 def vert_buoyancy_flux_CNN(*inputs, tmask):
     """ Compute vertical buoyancy flux with pre-trained CNN following Bodner et al (2024) """
     if Is_None(*inputs[0]):
@@ -82,6 +83,7 @@ def vert_buoyancy_flux_CNN(*inputs, tmask):
 
         # load pre-trained model without HBL
         model = torch.load( model_path+'/fcnn_k5_l7_m_HBL_res_'+res_string+'.pt' )
+        model.eval()
 
         # normalize and mask inputs
         to_stack = []
