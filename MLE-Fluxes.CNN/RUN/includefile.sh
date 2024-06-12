@@ -13,7 +13,7 @@ set -x
 
  RST_SKIP=1                           # if set, checking of the existence of the full set of restart files is disable (save time !)
  # next flags should be set to 1 if using DCM rev > 1674, to 0 otherwise.
- RST_DIRS=0                           # if set, assumes that restart files are written on multiple directories.
+ RST_DIRS=1                           # if set, assumes that restart files are written on multiple directories.
  RST_READY=1                          # if set assumes that restart file are ready to be read by NEMO (no links).
 
  monthly=0                            # set to 1 for monthly (1mo/xios) job segments
@@ -87,6 +87,7 @@ P_EXE_DIR=${PDIR}/RUN_${CONFIG}/${CONFIG_CASE}/EXE      # directory where to fin
 P_UTL_DIR=${WORK}/BLD/WeORCA025.L75-GB.INF/tools/REBUILD_MPP/BLD  # root directory of the build_nc programs (under bin )
 P_XIOS_DIR=${WORK}/local_libs/xios_trunk_oasis_5.0           # root directory of the XIOS library and xios_server.exe
 P_PY_DIR=$WORK/local_libs/morays/NEMO-MLE_Fluxes/MLE-Fluxes.CNN/INFERENCES
+P_PY_WEI_DIR=$P_PY_DIR/NEMO_MLE/trained_models
 
 P_OBS_DIR=/ccc/work/cont003/drakkar/drakkar     # for OBS operation
   P_ENA_DIR=${P_OBS_DIR}/ENACT-ENS
@@ -104,8 +105,10 @@ MERGE_EXEC=$P_UTL_DIR/bin/mergefile_mpp4.exe           # rebuild program (REBUIL
                                                        # if you want netcdf4 output use mergefile_mpp4.exe
 PYEXEC=$P_EXE_DIR/main.py                              # OASIS coupled executable - comment to ignore
 MODELS=$P_EXE_DIR/models.py
+WEIGHTS=fcnn_k5_l7_m_HBL_res_1_4.pt
 ln -sf $P_PY_DIR/main.py $PYEXEC
 ln -sf $P_PY_DIR/models.py $MODELS
+ln -sf $P_PY_WEI_DIR/$WEIGHTS $P_EXE_DIR/$WEIGHTS
 
 # In the following, set the name of some files that have a hard coded name in NEMO. Files with variable names
 # are directly set up in the corresponding namelist, the script take care of them.

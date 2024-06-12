@@ -39,13 +39,18 @@ else:
     print('CUDA Not Available')
     device = torch.device('cpu')
 
+# load model once: in-repo test or in local deployed config dir
+try:
+    net = torch.load( 'fcnn_k5_l7_m_HBL_res_'+res_string+'.pt' )
+except:
+    net = torch.load( model_path + '/fcnn_k5_l7_m_HBL_res_'+res_string+'.pt' )
+
 
 #       Utils 
 # -----------------
 def Is_None(*inputs):
     """ Test presence of at least one None in inputs """
     return any(item is None for item in inputs)
-
 
 def make_edges( array , edge ):
 
@@ -78,12 +83,8 @@ def vert_buoyancy_flux_CNN(*inputs, tmask):
         return None
     else:
         # load global values
-        global res_string, model_path, norms, rcpt_fld_size
+        global res_string, model_path, norms, rcpt_fld_size, net
         edge_size = rcpt_fld_size // 2
-
-        # load pre-trained model without HBL
-        model = torch.load( model_path+'/fcnn_k5_l7_m_HBL_res_'+res_string+'.pt' )
-        model.eval()
 
         # normalize and mask inputs
         to_stack = []
@@ -99,8 +100,9 @@ def vert_buoyancy_flux_CNN(*inputs, tmask):
         x_data = x_data[ np.newaxis, ... ]
         x_data = torch.from_numpy( x_data ).to( dtype=torch.float32 )
 
-        # passing the entire batch in test_loader into the CNN to get prediction of w'b'                
-        w_b = model( x_data.to(device) ).detach().numpy() 
+        # passing the entire batch in test_loader into the CNN to get prediction of w'b'              
+        net.eval()
+        w_b = net( x_data.to(device) ).detach().numpy() 
         # renormalize
         mean = norms['means']['WB_sg']
         dev = norms['devs']['WB_sg']
@@ -108,4 +110,19 @@ def vert_buoyancy_flux_CNN(*inputs, tmask):
         w_b = w_b[ edge_size:-edge_size , edge_size:-edge_size , np.newaxis ] # ?? ?? 
         w_b = ( w_b * tmask * dev ) + mean
 
-        return w_b
+        return -0.1*w_b
+
+
+if __name__ == '__main__' :
+    gradb = np.random.rand(120,100,1).astype('float32')
+    fcor = np.random.rand(120,100,1).astype('float32')
+    hml = np.random.rand(120,100,1).astype('float32')
+    tau = np.random.rand(120,100,1).astype('float32')
+    q = np.random.rand(120,100,1).astype('float32')
+    div = np.random.rand(120,100,1).astype('float32')
+    vort = np.random.rand(120,100,1).astype('float32')
+    strain = np.random.rand(120,100,1).astype('float32')
+    msk = np.ones((120,100,1)).astype('float32')
+    vert_flux = vert_buoyancy_flux_CNN((gradb,fcor,hml,tau,q,div,vort,strain),tmask=msk)
+    print(f'Returned vert_flux : {vert_flux.shape}')
+    print(f'Test successful')
