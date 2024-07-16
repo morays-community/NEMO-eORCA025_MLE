@@ -41,9 +41,9 @@ else:
 
 # load model once: in-repo test or in local deployed config dir
 try:
-    net = torch.load( 'fcnn_k5_l7_m_HBL_res_'+res_string+'.pt' )
+    net = torch.load( 'fcnn_k5_l7_m_HBL_res_'+res_string+'.pt' , map_location=device)
 except:
-    net = torch.load( model_path + '/fcnn_k5_l7_m_HBL_res_'+res_string+'.pt' )
+    net = torch.load( model_path + '/fcnn_k5_l7_m_HBL_res_'+res_string+'.pt' , map_location=device)
 
 
 #       Utils 
@@ -83,7 +83,7 @@ def vert_buoyancy_flux_CNN(*inputs, tmask):
         return None
     else:
         # load global values
-        global res_string, model_path, norms, rcpt_fld_size, net
+        global res_string, model_path, norms, rcpt_fld_size, net, device
         edge_size = rcpt_fld_size // 2
 
         # normalize and mask inputs
@@ -98,11 +98,15 @@ def vert_buoyancy_flux_CNN(*inputs, tmask):
         # build batch
         x_data = np.stack( to_stack, axis=0 )
         x_data = x_data[ np.newaxis, ... ]
-        x_data = torch.from_numpy( x_data ).to( dtype=torch.float32 )
+        x_data = torch.from_numpy( x_data ).to( device, dtype=torch.float32 )
 
         # passing the entire batch in test_loader into the CNN to get prediction of w'b'              
         net.eval()
-        w_b = net( x_data.to(device) ).detach().numpy() 
+        if device.type == 'cuda':
+            w_b = net( x_data.to(device) ).detach().cpu().numpy()
+        else:
+            w_b = net( x_data.to(device) ).detach().numpy() 
+
         # renormalize
         mean = norms['means']['WB_sg']
         dev = norms['devs']['WB_sg']
