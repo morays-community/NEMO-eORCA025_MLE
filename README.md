@@ -30,7 +30,7 @@ In reality, four experiments are realized :
 
 ### Python
 
-- Eophis version : [v0.9.1](https://github.com/meom-group/eophis/releases/tag/v0.9.1)
+- Eophis version : [v1.0.0](https://github.com/meom-group/eophis/releases/tag/v1.0.0)
 
 
 ### Run

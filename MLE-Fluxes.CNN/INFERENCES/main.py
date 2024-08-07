@@ -1,6 +1,6 @@
 # eophis API
 import eophis
-from eophis import Freqs, Grids
+from eophis import Freqs
 # other modules
 import argparse
 import os
@@ -12,7 +12,7 @@ def ocean_info():
     # coupling config
     tunnel_config = list()
     tunnel_config.append( { 'label' : 'TO_NEMO_FIELDS', \
-                            'grids' : { 'eORCA025' : Grids.eORCA025 }, \
+                            'grids' : { 'eORCA025' : {'npts' : (1440,1206) , 'halos' : 3, 'bnd' : ('cyclic','NFold'), 'folding' : ('T','T')} }, \
                             'exchs' : [ {'freq' : 900, 'grd' : 'eORCA025', 'lvl' : 1, \
                                          'in'  : ['grad_B','FCOR','HML','TAU','Q','div','vort','strain'], \
                                          'out' : ['w_b']} ] }
@@ -20,7 +20,7 @@ def ocean_info():
                         
     # static coupling (manual send/receive)
     tunnel_config.append( { 'label' : 'TO_NEMO_METRICS', \
-                            'grids' : { 'eORCA025' : Grids.eORCA025 }, \
+                            'grids' : { 'eORCA025' : {'npts' : (1440,1206) , 'halos' : 3, 'bnd' : ('cyclic','NFold'), 'folding' : ('T','T')} }, \
                             'exchs' : [ {'freq' : Freqs.STATIC, 'grd' : 'eORCA025', 'lvl' : 1, 'in' : ['tmask'], 'out' : []} ] }
                         )
                         
@@ -68,7 +68,7 @@ def production():
 
     #  Assemble
     # ++++++++++
-    @eophis.all_in_all_out(earth_system=nemo, step=step, niter=niter)
+    @eophis.all_in_all_out(geo_model=nemo, step=step, niter=niter)
     def loop_core(**inputs):
 
         arrays = ( inputs['grad_B'] , inputs['FCOR'], inputs['HML'], inputs['TAU'], \
