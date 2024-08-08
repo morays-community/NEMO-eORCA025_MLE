@@ -157,4 +157,4 @@ AGRIF_FIXED_GRID=AGRIF_FixedGrids.in                  ; NEMO_AGRIF_FIXED_GRID=AG
 
 # Control parameters
 # -----------------
-MAXSUB=10                # resubmit job till job $MAXSUB
+MAXSUB=12                # resubmit job till job $MAXSUB
