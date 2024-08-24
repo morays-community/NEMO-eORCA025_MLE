@@ -45,7 +45,7 @@ export NB_NPROC_PYCPL=128   # number of cores used for coupled python script
 # Rebuild process 
 export MERGE=0         # 1 = on the fly rebuild, 0 = dedicated job
 export NB_NPROC_MER=20 # number of cores used for rebuild on the fly  (1/node is a good choice)
-export NB_NNODE_MER=1  # number of nodes used for rebuild in dedicated job (MERGE=0). One instance of rebuild per node will be used.
+export NB_NNODE_MER=20  # number of nodes used for rebuild in dedicated job (MERGE=0). One instance of rebuild per node will be used.
 export WALL_CLK_MER=2:00:00   # wall clock time for batch rebuild
 export ACCOUNT=cli@cpu # account to be used
 
