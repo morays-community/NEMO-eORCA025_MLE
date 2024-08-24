@@ -1,7 +1,7 @@
 import os
 import argparse
 import numpy as np
-import xarray as xr
+import netCDF4 as nc
 import cmocean
 
 import cartopy.crs as ccrs
@@ -19,14 +19,14 @@ def main(filepath,filepath_ref,plotpath):
     print(filepath_ref)
 
     # read files
-    ds = xr.open_dataset(filepath)
-    ds_ref = xr.open_dataset(filepath_ref)
-    lon = ds_ref.nav_lon.values
-    lat = ds_ref.nav_lat.values
+    ds = nc.Dataset(filepath)
+    ds_ref = nc.Dataset(filepath_ref)
+    lon = ds_ref.variables['nav_lon']
+    lat = ds_ref.variables['nav_lat']
 
     # get fields
-    mld = getattr(ds,"somxl010").values[-1] 
-    mld_ref = getattr(ds_ref,"somxl010").values[-1]
+    mld = ds.variables["somxl010"][-1].data
+    mld_ref = ds_ref.variables["somxl010"][-1].data
     diff_mld = mld - mld_ref
 
     # plot

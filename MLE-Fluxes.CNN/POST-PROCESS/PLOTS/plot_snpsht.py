@@ -8,7 +8,7 @@ import argparse
 import random
 
 import numpy as np
-import xarray as xr
+import netCDF4 as nc
 import cmocean
 
 import cartopy.crs as ccrs
@@ -51,10 +51,10 @@ infos[ 'soexpsiv' ] = [ 'V-grid streamfunction (m2/s)' , cmocean.cm.balance , co
 # ============================================================
 #                       2D Fields to plot
 # ============================================================
-to_plot[ 'gridTsurf' ] = ['soext_wb'] #['somle_Lf','sosstsst','sosaline','sossheig','soext_wb'] # sst, sss, drho
-to_plot[ 'gridUsurf' ] = ['soexpsiu'] #['vozocrtx','soextwbi','sointwbi','soexpsiu']            # u-current
-to_plot[ 'gridVsurf' ] = ['soexpsiv'] #['vomecrty','soextwbj','sointwbj','soexpsiv']            # v-current
-#to_plot[ 'flxT' ] = ['sohefldo','sosfldow','sowaflup']      # heat, salt, water fluxes
+to_plot[ 'gridTsurf' ] = ['soext_wb','somle_Lf','sosstsst','sosaline','sossheig','soext_wb'] # sst, sss, drho
+to_plot[ 'gridUsurf' ] = ['vozocrtx','soexpsiu']            # u-current
+to_plot[ 'gridVsurf' ] = ['vomecrty','soexpsiv']            # v-current
+to_plot[ 'flxT' ] = ['sohefldo','sosfldow','sowaflup']      # heat, salt, water fluxes
 # ============================================================
 #                       3D Fields to plot
 # ============================================================
@@ -97,27 +97,27 @@ def main(respath,plotpath,confcase,freq,year,month,day,depth):
 
         # get mesh and data if file exists
         if os.path.isfile(grid_file):
-            ds=xr.open_dataset(grid_file)
-            lon = ds.nav_lon.values
-            lat = ds.nav_lat.values
+            ds=nc.Dataset(grid_file)
+            lon = ds.variables['nav_lon']
+            lat = ds.variables['nav_lat']
             try:
-                dpt = ds.deptht.values
+                dpt = ds.variables['deptht']
             except Exception as e0:
                 try:
-                    dpt = ds.depthu.values
+                    dpt = ds.variables['depthu']
                 except Exception as e1:
                     try:
-                        dpt = ds.depthv.values
+                        dpt = ds.variables['depthv']
                     except Exception as e2:
                         try:
-                            dpt = ds.depthw.values
+                            dpt = ds.variables['depthw']
                         except Exception as e3:
                             dpt = None
 
             # loop on fields
             for fld in to_plot[file]:
                 print(f'Plotting {fld}')
-                data = getattr(ds,fld).values[-1]
+                data = ds.variables[fld][-1].data
                 # check data
                 if data is None:
                     data = np.zeros(lon.shape())
