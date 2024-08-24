@@ -8,7 +8,6 @@ import torch
 # ============================= #
 # res_string can be one of the following ['1_12','1_8','1_4','1_2','1']
 res_string = '1_4'
-edge_size = 3
 model_path = '/gpfswork/rech/cli/udp79td/local_libs/morays/NEMO-MLE_Fluxes/MLE-Fluxes.CNN/INFERENCES/NEMO_MLE/trained_models'
 
 # ================================= #
@@ -58,7 +57,8 @@ def vert_buoyancy_flux_CNN(*inputs, tmask):
         return None
     else:
         # load global values
-        global res_string, model_path, norms, edge_size, net, device
+        global res_string, model_path, norms, net, device
+        net.eval()
 
         # normalize and mask inputs
         to_stack = []
@@ -86,7 +86,7 @@ def vert_buoyancy_flux_CNN(*inputs, tmask):
         w_b = w_b[ : , : , np.newaxis ]
         w_b = ( w_b * tmask * dev ) + mean
 
-        return -0.1*w_b
+        return w_b #-0.1*w_b
 
 
 if __name__ == '__main__' :
