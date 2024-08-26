@@ -231,8 +231,8 @@ CONTAINS
          !                     !==  External computation of MLE ==!
          CALL lbc_lnk( 'tramle', zum, 'U', 1.0_wp , zvm, 'V', 1.0_wp )
          CALL inferences( kt , 0, 0, 0, zmld, zbm, zum, zvm )
-         !zpsim_u(:,:) = ext_psiu(:,:) * e2u(:,:)    ! replace by external values
-         !zpsim_v(:,:) = ext_psiv(:,:) * e1v(:,:)
+         zpsim_u(:,:) = ext_psiu(:,:) * e2u(:,:)    ! replace by external values
+         zpsim_v(:,:) = ext_psiv(:,:) * e1v(:,:)
          !
          !
          IF( nn_conv == 1 ) THEN              ! No MLE in case of convection
