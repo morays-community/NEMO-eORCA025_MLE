@@ -86,7 +86,7 @@ def vert_buoyancy_flux_CNN(*inputs, tmask):
         w_b = w_b[ : , : , np.newaxis ]
         w_b = ( w_b * tmask * dev ) + mean
 
-        return w_b #-0.1*w_b
+        return -0.001*w_b #-0.1*w_b
 
 
 if __name__ == '__main__' :

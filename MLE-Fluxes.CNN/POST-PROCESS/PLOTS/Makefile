@@ -11,3 +11,7 @@ snapshots:
 
 means_1d:
 	python3 ./plot_means.py -f 1d -y 1967 -m 3 9
+
+diffmle:
+	python3 ./diff_mle.py -cref eORCA025.L75-REF -f 1d -y 1967 -m 3
+	python3 ./diff_mle.py -cref eORCA025.L75-REF -f 1d -y 1967 -m 9
