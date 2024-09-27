@@ -1,5 +1,6 @@
 # MLE-Fluxes
 
+[![DOI](https://zenodo.org/badge/763681074.svg)](https://doi.org/10.5281/zenodo.13851909)
 
 ## Context and Motivation
 
@@ -8,7 +9,7 @@ Internal and external computed fluxes are written in an output file with the NEM
 
 #### Variations
 - **STD** : External standard computation, as described in [Calvert et al. (2020)](https://doi.org/10.1016/j.ocemod.2020.101678) with retroaction on the solution
-- **CNN** : Fluxes computed from pre-trained [Bodner, Balwada and Zanna (2024)]() CNN `...WORK IN PROGRESS...`
+- **CNN** : Fluxes computed from pre-trained [Bodner, Balwada and Zanna (2024)]() CNN
 
 In reality, four experiments are realized :
 - `eORCA025.L75` : no MLE, used as reference to compare the effects of the different methods on mixed layer depth
