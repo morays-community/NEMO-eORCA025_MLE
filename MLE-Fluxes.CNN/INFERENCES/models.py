@@ -9,6 +9,7 @@ import torch
 # res_string can be one of the following ['1_12','1_8','1_4','1_2','1']
 res_string = '1_4'
 model_path = '/gpfswork/rech/cli/udp79td/local_libs/morays/NEMO-MLE_Fluxes/MLE-Fluxes.CNN/INFERENCES/NEMO_MLE/trained_models'
+norm_path = '/gpfswork/rech/cli/udp79td/local_libs/morays/NEMO-MLE_Fluxes/MLE-Fluxes.CNN/INFERENCES/norms'
 
 # ================================= #
 # --------- DO NOT MODIFY --------
@@ -17,12 +18,12 @@ norms = { 'means' : {}, 'devs' : {} }
 input_string = ['grad_B','FCOR' , 'HML', 'TAU', 'Q', 'div', 'vort', 'strain']
 
 # (re)normalization values
-norms['means']['WB_sg'] = np.load( model_path + '/norm_' + res_string + '/WB_sg_mean.npy' )
-norms['devs']['WB_sg'] = np.load( model_path + '/norm_' + res_string + '/WB_sg_std.npy' )
+norms['means']['WB_sg'] = np.load( norm_path + '/norm_' + res_string + '/WB_sg_mean.npy' )
+norms['devs']['WB_sg'] = np.load( norm_path + '/norm_' + res_string + '/WB_sg_std.npy' )
 
 for name in input_string:
-    file_mean = model_path + '/norm_' + res_string + '/' + name + '_mean.npy'
-    file_dev = model_path + '/norm_' + res_string +  '/' + name  + '_std.npy'
+    file_mean = norm_path + '/norm_' + res_string + '/' + name + '_mean.npy'
+    file_dev = norm_path + '/norm_' + res_string +  '/' + name  + '_std.npy'
     norms['means'][name] = np.load(file_mean) 
     norms['devs'][name] = np.load(file_dev)
 
