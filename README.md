@@ -1,4 +1,4 @@
-# MLE-Fluxes
+# eORCA025_MLE
 
 [![DOI](https://zenodo.org/badge/763681074.svg)](https://doi.org/10.5281/zenodo.13851909)
 
