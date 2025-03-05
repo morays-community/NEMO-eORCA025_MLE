@@ -1,3 +1,3 @@
-[submodule "MLE-Fluxes.CNN/INFERENCES/NEMO_MLE"]
-        path = MLE-Fluxes.CNN/INFERENCES/NEMO_MLE
+[submodule "eORCA025_MLE.BBZ24/INFERENCES/NEMO_MLE"]
+        path = eORCA025_MLE.BBZ24/INFERENCES/NEMO_MLE
         url = git@github.com:abodner/NEMO_MLE.git
