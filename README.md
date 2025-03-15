@@ -32,10 +32,10 @@ In reality, four experiments are realized :
 ### Python
 
 - Eophis version : [v1.0.0](https://github.com/meom-group/eophis/releases/tag/v1.0.0)
-- **CNN** dependencies:
+- **BBZ24** dependencies:
   ```bash
     git submodule update --init --recursive
-    cd MLE-Fluxes.CNN/INFERENCES/NEMO_MLE
+    cd eORCA025_MLE.BBZ24/INFERENCES/NEMO_MLE
     pip install -e .  
   ```
 
