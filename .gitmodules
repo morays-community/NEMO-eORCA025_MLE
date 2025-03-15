@@ -1,3 +1,3 @@
 [submodule "eORCA025_MLE.BBZ24/INFERENCES/NEMO_MLE"]
-        path = eORCA025_MLE.BBZ24/INFERENCES/NEMO_MLE
-        url = git@github.com:abodner/NEMO_MLE.git
+	path = eORCA025_MLE.BBZ24/INFERENCES/NEMO_MLE
+	url = https://github.com/abodner/NEMO_MLE.git
