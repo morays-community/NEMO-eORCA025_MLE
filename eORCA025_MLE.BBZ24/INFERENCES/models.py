@@ -8,8 +8,8 @@ import torch
 # ============================= #
 # res_string can be one of the following ['1_12','1_8','1_4','1_2','1']
 res_string = '1_4'
-model_path = '/gpfswork/rech/cli/udp79td/local_libs/morays/NEMO-MLE_Fluxes/MLE-Fluxes.CNN/INFERENCES/NEMO_MLE/trained_models'
-norm_path = '/gpfswork/rech/cli/udp79td/local_libs/morays/NEMO-MLE_Fluxes/MLE-Fluxes.CNN/INFERENCES/norms'
+model_path = '/lustre/fsn1/projects/rech/cli/ufp82hb/Libraries/NEMO-MLE_Fluxes/MLE-Fluxes.CNN/INFERENCES/NEMO_MLE/trained_models'
+norm_path = '/lustre/fsn1/projects/rech/cli/ufp82hb/Libraries/NEMO-MLE_Fluxes/MLE-Fluxes.CNN/INFERENCES/norms'
 
 # ================================= #
 # --------- DO NOT MODIFY --------
@@ -87,7 +87,7 @@ def vert_buoyancy_flux_CNN(*inputs, tmask):
         w_b = w_b[ : , : , np.newaxis ]
         w_b = ( w_b * tmask * dev ) + mean
 
-        return -0.001*w_b #-0.1*w_b
+        return w_b 
 
 
 if __name__ == '__main__' :

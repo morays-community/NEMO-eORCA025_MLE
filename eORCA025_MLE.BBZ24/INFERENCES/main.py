@@ -70,10 +70,10 @@ def production():
     # ++++++++++
     @eophis.all_in_all_out(geo_model=nemo, step=step, niter=niter)
     def loop_core(**inputs):
-
-        arrays = ( inputs['grad_B'] , inputs['FCOR'], inputs['HML'], inputs['TAU'], \
+        # Change HML sign to match the HML sign used in the training   
+        arrays = ( inputs['grad_B'] , inputs['FCOR'], -inputs['HML'], inputs['TAU'], \
                      inputs['Q'], inputs['div'], inputs['vort'], inputs['strain']  )  
-
+        
         outputs = {}
         outputs['w_b'] = vert_buoyancy_flux_CNN( arrays , tmask=tmask )
         
