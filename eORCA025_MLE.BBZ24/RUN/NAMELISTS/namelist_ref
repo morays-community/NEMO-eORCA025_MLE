@@ -1537,7 +1537,7 @@
    ln_nnogather =  .true.  !  activate code to avoid mpi_allgather use at the northfold
    jpni        =   0       !  number of processors following i (set automatically if < 1), see also ln_listonly = T
    jpnj        =   0       !  number of processors following j (set automatically if < 1), see also ln_listonly = T
-   nn_hls      =   1       !  halo width (applies to both rows and columns)
+   nn_hls      =   2       !  halo width (applies to both rows and columns)
    nn_comm     =   1       !  comm choice
 /
 !-----------------------------------------------------------------------
