@@ -233,6 +233,7 @@ CONTAINS
       !
       ! ------  Prepare data to send ------
       !
+      !
       ! gradB
       CALL calc_2D_scal_gradient( bz, zdatx, zdaty )
       infsnd(jps_gradb)%z3(:,:,ssnd(ntypinf,jps_gradb)%nlvl) = SQRT( zdatx(:,:)**2 + zdaty(:,:)**2 )
@@ -243,18 +244,21 @@ CONTAINS
       ! Tau
       infsnd(jps_tau)%z3(:,:,ssnd(ntypinf,jps_tau)%nlvl) = taum(:,:)
       ! Heat Flux
-      infsnd(jps_q)%z3(:,:,ssnd(ntypinf,jps_q)%nlvl) = qsr(:,:) + qns(:,:) 
+      infsnd(jps_q)%z3(:,:,ssnd(ntypinf,jps_q)%nlvl) = qsr(:,:) + qns(:,:)
       ! horizontal divergence
       CALL calc_2D_vec_hdiv( hmld, uz, vz, zdat )
-      infsnd(jps_div)%z3(:,:,ssnd(ntypinf,jps_div)%nlvl) = zdat(:,:) 
+      infsnd(jps_div)%z3(:,:,ssnd(ntypinf,jps_div)%nlvl) = zdat(:,:)
+      CALL iom_put( 'ext_div_mle', zdat)
       ! vorticity
       CALL calc_2D_vec_vort( uz, vz, zdat )
       infsnd(jps_vort)%z3(:,:,ssnd(ntypinf,jps_vort)%nlvl) = zdat(:,:)
+      CALL iom_put( 'ext_vort_mle', zdat)
       ! strain
       CALL calc_2D_strain_magnitude( uz, vz, zdat )
       infsnd(jps_strain)%z3(:,:,ssnd(ntypinf,jps_strain)%nlvl) = zdat(:,:)
+      CALL iom_put( 'ext_strain_mle', zdat)
       ! tmask
-      infsnd(jps_tmask)%z3(:,:,1:ssnd(ntypinf,jps_tmask)%nlvl) = tmask(:,:,1:ssnd(ntypinf,jps_tmask)%nlvl) 
+      infsnd(jps_tmask)%z3(:,:,1:ssnd(ntypinf,jps_tmask)%nlvl) = tmask(:,:,1:ssnd(ntypinf,jps_tmask)%nlvl)
       !
       ! ========================
       !   Proceed all sendings
@@ -284,56 +288,76 @@ CONTAINS
       ext_wb(:,:) = infrcv(jpr_wb)%z3(:,:,srcv(ntypinf,jpr_wb)%nlvl)
       !
       ! get streamfunction on correct grid points
-      CALL invert_buoyancy_flux( ext_wb, zdatx, zdaty, ext_psiu, ext_psiv )  
+      CALL invert_buoyancy_flux( ext_wb, zdatx, zdaty, bz,  ext_psiu, ext_psiv )  
       !
+      !CALL lbc_lnk( 'infmod', ext_psiu, 'U', 1.0_wp , ext_psiv, 'V', 1.0_wp )
       ! output results
       CALL iom_put( 'ext_wb', ext_wb )
       CALL iom_put( 'ext_psiu_mle', ext_psiu )
       CALL iom_put( 'ext_psiv_mle', ext_psiv )
+      CALL iom_put( 'ext_bx_mle', zdatx )
+      CALL iom_put( 'ext_by_mle', zdaty )
+      CALL iom_put( 'ext_grdB_mle', SQRT( zdatx(:,:)**2 + zdaty(:,:)**2 ))
+      CALL iom_put( 'ext_hmld_mle', hmld)
+      CALL iom_put( 'ext_taum_mle', taum)
+      CALL iom_put( 'ext_q_mle', qsr(:,:) + qns(:,:))
+      CALL iom_put( 'ext_f_mle', ff_t)
       !
       IF( ln_timing )   CALL timing_stop('inferences')
       !
    END SUBROUTINE inferences
 
 
-   SUBROUTINE invert_buoyancy_flux( wb, gradbx, gradby, psiu, psiv )
+   SUBROUTINE invert_buoyancy_flux( wb, gradbx, gradby, scalar, psiu, psiv )
       !!----------------------------------------------------------------------
       !!             ***  ROUTINE invert_buoyancy_flux  ***
       !!
-      !! ** Purpose :   Compute streamfunction on u- and v- points 
+      !! ** Purpose :   Compute streamfunction on u- and v- points
       !!                from vertical buoyancy flux and buoyancy gradient
       !!
       !! ** Method  :   * Invert w'b' = psi x grad_b
       !!----------------------------------------------------------------------
-      REAL(wp), DIMENSION(jpi,jpj), INTENT(inout) ::  wb, gradbx, gradby  ! vert. buoyncy flux and buoyancy gradient
-      REAL(wp), DIMENSION(jpi,jpj), INTENT(out) :: psiu, psiv  ! computed streamfunction
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(inout) ::  wb, gradbx, gradby   ! vert. buoyncy flux
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(in) ::  scalar  !  buoyancy
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(out) ::  psiu, psiv  ! computed streamfunction
       !
       INTEGER  ::   ji, jj          ! dummy loop indices
       INTEGER  :: jwgt              ! local storage integer
-      REAL(wp) :: amp
-      REAL(wp), DIMENSION(jpi,jpj) :: ztmpu, ztmpv  ! buffers
+      REAL(wp) :: ampu, ampv
+      REAL(wp), DIMENSION(jpi,jpj) :: dbu, dbv, dbu_v, dbv_u, wbu, wbv  ! buffers
       !!----------------------------------------------------------------------
       !
       ! invert buoyancy fluxes
-      CALL lbc_lnk( 'infmod', gradbx, 'T', 1.0_wp , gradby, 'T', 1.0_wp )
-      DO_2D( nn_hls, nn_hls, nn_hls, nn_hls )
-         amp = gradbx(ji,jj)**2 + gradby(ji,jj)**2
-         IF ( amp == 0.0_wp ) amp = 1.0_wp
-         ztmpu(ji,jj) = wb(ji,jj) * gradbx(ji,jj) / amp * tmask(ji,jj,1)
-         ztmpv(ji,jj) = wb(ji,jj) * gradby(ji,jj) / amp * tmask(ji,jj,1)
-      END_2D
-      !
+
       ! interpolate to velocity points
       DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
-         ! u-grid
-         jwgt = tmask(ji+1,jj,1) + tmask(ji,jj,1)
-         IF ( jwgt == 0 ) jwgt = 1
-         psiu(ji,jj) = ( ztmpu(ji+1,jj) + ztmpu(ji,jj) ) / REAL(jwgt,wp)
+         dbu(ji,jj) = (scalar(ji+1,jj) - scalar(ji,jj))/e1u(ji,jj) * umask(ji,jj,1)
+         dbv(ji,jj) = (scalar(ji,jj+1) - scalar(ji,jj))/e2v(ji,jj) * vmask(ji,jj,1)
+      END_2D
 
-         ! v-grid
+      DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
+         wbu(ji,jj) = 0.5*(wb(ji+1,jj) + wb(ji,jj)) * umask(ji,jj,1)
+         wbv(ji,jj) = 0.5*(wb(ji,jj+1) + wb(ji,jj)) * vmask(ji,jj,1)
+      END_2D
+
+      CALL lbc_lnk( 'infmod', gradbx, 'T', 1.0_wp , gradby, 'T', 1.0_wp )
+      DO_2D( nn_hls, nn_hls-1, nn_hls, nn_hls-1 )
          jwgt = tmask(ji,jj+1,1) + tmask(ji,jj,1)
          IF ( jwgt == 0 ) jwgt = 1
-         psiv(ji,jj) = ( ztmpv(ji,jj+1) + ztmpv(ji,jj) ) / REAL(jwgt,wp)
+         dbu_v(ji,jj) = ( gradbx(ji,jj+1) + gradbx(ji,jj) ) / REAL(jwgt,wp)
+
+         jwgt = tmask(ji+1,jj,1) + tmask(ji,jj,1)
+         IF ( jwgt == 0 ) jwgt = 1
+         dbv_u(ji,jj) = ( gradby(ji+1,jj) + gradby(ji,jj) ) / REAL(jwgt,wp)
+      END_2D
+
+      DO_2D( nn_hls-1, nn_hls-1, nn_hls-1, nn_hls-1 )
+         ampu = dbu(ji,jj)**2+dbv_u(ji,jj)**2
+         IF ( ampu == 0.0_wp ) ampu = 1.0_wp
+         ampv = dbv(ji,jj)**2+dbu_v(ji,jj)**2
+         IF ( ampv == 0.0_wp ) ampv = 1.0_wp
+         psiu(ji,jj) = ( wbu(ji,jj)/ MAX( ampu, (wbu(ji,jj) / 1E2)**2) ) * dbu(ji,jj) * umask(ji,jj,1)
+         psiv(ji,jj) = ( wbv(ji,jj)/ MAX( ampv, (wbv(ji,jj) / 1E2)**2) ) * dbv(ji,jj) * vmask(ji,jj,1)
       END_2D
       !
    END SUBROUTINE invert_buoyancy_flux
@@ -365,7 +389,7 @@ CONTAINS
          ! grad in j-latitude
          grady(ji,jj) = ( scalar(ji,jj+1) - scalar(ji,jj) ) / e2v(ji,jj) * vmask(ji,jj,1)
          grady(ji,jj) = grady(ji,jj) + ( scalar(ji,jj) - scalar(ji,jj-1) ) / e2v(ji,jj-1) * vmask(ji,jj-1,1)
-         jwgt = vmask(ji,jj,1) + vmask(ji-1,jj,1)
+         jwgt = vmask(ji,jj,1) + vmask(ji,jj-1,1)
          IF ( jwgt == 0 ) jwgt = 1
          grady(ji,jj) = grady(ji,jj) / REAL(jwgt,wp)
       END_2D

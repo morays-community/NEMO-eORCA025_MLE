@@ -99,7 +99,7 @@ CONTAINS
       REAL(wp) ::   zcuw, zmuw, zc      ! local scalar
       REAL(wp) ::   zcvw, zmvw          !   -      -
       INTEGER , DIMENSION(A2D(nn_hls))     :: inml_mle
-      REAL(wp), DIMENSION(A2D(nn_hls))     :: zpsim_u, zpsim_v, zmld, zbm, zhu, zhv, zn2, zLf_NH, zLf_MH
+      REAL(wp), DIMENSION(A2D(nn_hls))     :: zpsim_u, zpsim_v, zmld, zbm, zhu, zhv, zn2, zLf_NH, zLf_MH, ext_psiuf, ext_psivf
       REAL(wp), DIMENSION(A2D(nn_hls),jpk) :: zpsi_uw, zpsi_vw
       REAL(wp), DIMENSION(A2D(nn_hls))     :: zum, zvm  !: depth averaged velocities, for external model
       !!----------------------------------------------------------------------
@@ -231,8 +231,23 @@ CONTAINS
          !                     !==  External computation of MLE ==!
          CALL lbc_lnk( 'tramle', zum, 'U', 1.0_wp , zvm, 'V', 1.0_wp )
          CALL inferences( kt , 0, 0, 0, zmld, zbm, zum, zvm )
-         zpsim_u(:,:) = ext_psiu(:,:) * e2u(:,:)    ! replace by external values
-         zpsim_v(:,:) = ext_psiv(:,:) * e1v(:,:)
+
+         ! Filtering data        
+         CALL lap_par_flt( ext_psiu, ext_psiuf )
+         ext_psiuf(:,:) = ext_psiuf(:,:) * lap_par_flt_fac ( 0 )
+         CALL lap_par_flt( ext_psiv, ext_psivf )
+         ext_psivf(:,:) = ext_psivf(:,:) * lap_par_flt_fac ( 0 )
+         CALL lbc_lnk( 'tramle', ext_psiuf, 'U', 1.0_wp , ext_psivf, 'V', 1.0_wp )
+
+
+
+         zpsim_u(:,:) = ext_psiuf(:,:) * e2u(:,:)    ! replace by external values
+         zpsim_v(:,:) = ext_psivf(:,:) * e1v(:,:)
+
+
+         CALL iom_put( 'ext_psiuf_mle', ext_psiuf )
+         CALL iom_put( 'ext_psivf_mle', ext_psivf )
+
          !
          !
          IF( nn_conv == 1 ) THEN              ! No MLE in case of convection
@@ -301,6 +316,78 @@ CONTAINS
       ENDIF
       !
    END SUBROUTINE tra_mle_trp
+
+
+
+   SUBROUTINE lap_par_flt( var_psi, var_psif )
+      !!----------------------------------------------------------------------
+      !!                  ***  ROUTINE sto_par_flt  ***
+      !!
+      !! ** Purpose :   apply horizontal Laplacian filter to input array.
+      !!                Based stopar.F90
+      !!----------------------------------------------------------------------
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(in)           ::   var_psi
+      REAL(wp), DIMENSION(jpi,jpj), INTENT(out)           ::   var_psif
+      !!
+      INTEGER  :: ji, jj
+
+      DO_2D( 0, 0, 0, 0 )
+         var_psif(ji,jj) = 0.5_wp * var_psi(ji,jj) + 0.125_wp * &
+                           &  ( var_psi(ji-1,jj) + var_psi(ji+1,jj) +  &
+                           &    var_psi(ji,jj-1) + var_psi(ji,jj+1) )
+      END_2D
+
+   END SUBROUTINE lap_par_flt
+
+
+   FUNCTION lap_par_flt_fac( kpasses )
+      !!----------------------------------------------------------------------
+      !!                  ***  FUNCTION sto_par_flt_fac  ***
+      !!
+      !! ** Purpose :   compute factor to restore standard deviation
+      !!                as a function of the number of passes
+      !!                of the Laplacian filter
+      !!----------------------------------------------------------------------
+      INTEGER, INTENT(in) :: kpasses
+      REAL(wp) :: lap_par_flt_fac
+      !!
+      INTEGER :: jpasses, ji, jj, jflti, jfltj
+      INTEGER, DIMENSION(-1:1,-1:1) :: pflt0
+      REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pfltb
+      REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pflta
+      REAL(wp) :: ratio
+
+      pflt0(-1,-1) = 0 ; pflt0(-1,0) = 1 ; pflt0(-1,1) = 0
+      pflt0( 0,-1) = 1 ; pflt0( 0,0) = 4 ; pflt0( 0,1) = 1
+      pflt0( 1,-1) = 0 ; pflt0( 1,0) = 1 ; pflt0( 1,1) = 0
+
+      ALLOCATE(pfltb(-kpasses-1:kpasses+1,-kpasses-1:kpasses+1))
+      ALLOCATE(pflta(-kpasses-1:kpasses+1,-kpasses-1:kpasses+1))
+
+      pfltb(:,:) = 0
+      pfltb(0,0) = 1
+      DO jpasses = 1, kpasses
+        pflta(:,:) = 0
+        DO jflti= -1, 1
+        DO jfltj= -1, 1
+          DO ji= -kpasses, kpasses
+          DO jj= -kpasses, kpasses
+            pflta(ji,jj) = pflta(ji,jj) + pfltb(ji+jflti,jj+jfltj) * pflt0(jflti,jfltj)
+          ENDDO
+          ENDDO
+        ENDDO
+        ENDDO
+        pfltb(:,:) = pflta(:,:)
+      ENDDO
+      ratio = SUM(pfltb(:,:))
+      ratio = ratio * ratio / SUM(pfltb(:,:)*pfltb(:,:))
+      ratio = SQRT(ratio)
+
+      DEALLOCATE(pfltb,pflta)
+
+      lap_par_flt_fac = ratio
+
+   END FUNCTION lap_par_flt_fac
 
    SUBROUTINE tra_mle_init
       !!---------------------------------------------------------------------
