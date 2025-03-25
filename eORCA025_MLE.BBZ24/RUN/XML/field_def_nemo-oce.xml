@@ -282,6 +282,18 @@ that are available in the tidal-forcing implementation (see
     <field id="vtbl"            long_name="merid current in the Losh tbl at T point"      unit="m/s"      />
     <field id="isfustar"        long_name="ustar at T point used in ice shelf melting"    unit="m/s"      />
 
+    <!-- top boundary layer properties -->
+    <field id="ext_bx_mle"       long_name="Externally computed  buoyancy gradient x" unit="s-2" />
+    <field id="ext_by_mle"       long_name="Externally computed  buoyancy gradient y" unit="s-2" />
+    <field id="ext_hmld_mle"       long_name="Externally computed  MLD" unit="m" />
+    <field id="ext_taum_mle"       long_name="Externally computed  magnitude wind stress" unit="Ns-2" />
+    <field id="ext_q_mle"       long_name="Externally computed  heat fluxes" unit="Ws-2" />
+    <field id="ext_f_mle"       long_name="Externally computed  coriolis" unit="s-1" />
+    <field id="ext_strain_mle"       long_name="Externally computed  strain" unit="s-2" />
+    <field id="ext_div_mle"       long_name="Externally computed  div" unit="s-2" />
+    <field id="ext_vort_mle"       long_name="Externally computed  vort" unit="s-2" />
+    <field id="ext_grdB_mle"       long_name="Externally computed  buoyancygradiente" unit="s-2" />
+
   </field_group> <!-- grid_T -->
 
   <!-- Tides -->
@@ -623,6 +635,7 @@ that are available in the tidal-forcing implementation (see
     <!-- variables available with MLE (ln_mle=T) -->
     <field id="psiu_mle"     long_name="MLE streamfunction along i-axis"   unit="m3/s"   grid_ref="grid_U_3D" />
     <field id="ext_psiu_mle"  long_name="Externally computed MLE streamfunction along i-axis" unit="m2/s" />
+    <field id="ext_psiuf_mle"  long_name="Externally computed MLE streamfunction  flt along i-axis" unit="m2/s" />
 
     <!-- uoce_eiv: available EIV (ln_ldfeiv=T and ln_ldfeiv_dia=T) -->
     <field id="uoce_eiv"      long_name="EIV ocean current along i-axis"                                  standard_name="bolus_sea_water_x_velocity"                     unit="m/s"   grid_ref="grid_U_3D" />
@@ -684,8 +697,8 @@ that are available in the tidal-forcing implementation (see
     <!-- variables available with MLE (ln_mle=T) -->
     <field id="psiv_mle"     long_name="MLE streamfunction along j-axis"   unit="m3/s"   grid_ref="grid_V_3D" />
     <field id="ext_psiv_mle"  long_name="Externally computed MLE streamfunction along j-axis" unit="m2/s" />
-
-    <!-- voce_eiv: available EIV (ln_ldfeiv=T and ln_ldfeiv_dia=T)  -->
+    <field id="ext_psivf_mle"  long_name="Externally computed MLE streamfunction flt along j-axis" unit="m2/s" /> 
+   <!-- voce_eiv: available EIV (ln_ldfeiv=T and ln_ldfeiv_dia=T)  -->
     <field id="voce_eiv"     long_name="EIV ocean current along j-axis"  standard_name="bolus_sea_water_y_velocity"     unit="m/s"   grid_ref="grid_V_3D" />
     <field id="veiv_masstr"  long_name="EIV Ocean Mass Y Transport"      standard_name="bolus_ocean_mass_y_transport"   unit="kg/s"  grid_ref="grid_V_3D" />
     <field id="veiv_heattr"   long_name="ocean bolus heat transport along j-axis"       standard_name="ocean_heat_y_transport_due_to_bolus_advection"   unit="W"                         />
