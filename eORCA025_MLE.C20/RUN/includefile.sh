@@ -22,7 +22,7 @@ set -x
 #########################################################################
 
  CONFIG=eORCA025.L75
- CASE=MLE.STD
+ CASE=MLE.C20
  CONFIG_CASE=${CONFIG}-${CASE}
 
 # Environmemt and miscelaneous
