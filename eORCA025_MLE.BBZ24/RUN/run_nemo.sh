@@ -11,7 +11,7 @@ if [ ! $PDIR ] ; then
    exit 1
 fi
 CONFIG=eORCA025.L75
-CASE=MLE.CNN
+CASE=MLE.BBZ24
 CONFCASE=${CONFIG}-${CASE}
 
 set +x

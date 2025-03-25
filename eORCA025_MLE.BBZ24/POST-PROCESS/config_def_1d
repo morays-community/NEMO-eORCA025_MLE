@@ -16,7 +16,7 @@
 # Name of CONFIG and CASE
 
 CONFIG=eORCA025.L75
-CASE=MLE.CNN
+CASE=MLE.BBZ24
 MACHINE=jean-zay
 NODETYPE=BDW28
 ulimit -s unlimited  # needed for occigen 
